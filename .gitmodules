@@ -3,4 +3,4 @@
 	url = https://github.com/Windos/BurntToast
 [submodule "GitUtils"]
 	path = GitUtils
-	url = git@bitbucket.org:GennadyGS/gitutils.git
+	url = git@github.com:GennadyGS/gitUtils.git
