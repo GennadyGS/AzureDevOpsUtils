@@ -1,0 +1,4 @@
+$baseTfsInstanceUrl = ""
+$collection = ""
+$pat = ""
+$teamName = ""
