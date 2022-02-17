@@ -29,5 +29,5 @@ if (!$buildId) {
     return
 }
 Write-Output "Build id: $buildId"
-    
+
 & $PSScriptRoot/WatchBuildById.ps1 $buildId

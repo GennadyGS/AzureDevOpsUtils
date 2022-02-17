@@ -29,7 +29,9 @@ $urlBase = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullReq
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
 $title =
-    GetCommitMessages -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName `
+    GetCommitMessages `
+        -sourceBranchName $sourceBranchName `
+        -targetBranchName $remoteName/$targetBranchName `
     | Select-Object -First 1
 
 $workItems
@@ -48,25 +50,15 @@ $result = Invoke-RestMethod `
     -Body ($body | ConvertTo-Json) `
     -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
 $pullRequestId = $result.pullRequestId
-Write-Host "Pull request id: $pullRequestId with title '$title'"
+Write-Host "Pull request created; id: $pullRequestId; title: '$title'"
 
 if ($autoComplete) {
-    $patchBody = @{
-        autoCompleteSetBy = @{ id = $result.createdBy.id }
-        completionOptions = @{
-            deleteSourceBranch = $true
-            mergeCommitMessage = $title
-        }
-    }
-    $patchResult = Invoke-RestMethod `
-        -Uri $urlBase/$pullRequestId$apiVersionParam `
-        -Method 'PATCH' `
-        -Body ($patchBody | ConvertTo-Json) `
-        -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
+    & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $result
 }
 
 if ($workItems) {
-    $workItemNameList = $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}
+    $workItemNameList =
+        $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`"" }
     $workItemNames = [string]::Join(", ", $workItemNameList)
     $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
     Try {

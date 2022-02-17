@@ -33,40 +33,67 @@ $activeComments = 0
 $approvalCount = 0
 $rejectCount = 0
 $failures = 0
+$host.UI.RawUI.FlushInputBuffer()
 Do {
     Try {
-        $pullRequest = Invoke-RestMethod -Uri $url -Method 'Get' -Body $body -Headers @{Authorization = $authorization } 
-        $pullRequestThreads = Invoke-RestMethod -Uri $url/threads -Method 'Get' -Body $body -Headers @{Authorization = $authorization } 
-        $pullRequestReviewers = Invoke-RestMethod -Uri $url/reviewers -Method 'Get' -Body $body -Headers @{Authorization = $authorization } 
+        $pullRequest = Invoke-RestMethod `
+            -Uri $url `
+            -Method 'GET' `
+            -Body $body `
+            -Headers @{Authorization = $authorization }
+        $pullRequestThreads = Invoke-RestMethod `
+            -Uri $url/threads `
+            -Method 'GET' `
+            -Body $body `
+            -Headers @{Authorization = $authorization }
+        $pullRequestReviewers = Invoke-RestMethod `
+            -Uri $url/reviewers `
+            -Method 'GET' `
+            -Body $body `
+            -Headers @{Authorization = $authorization }
         $failures = 0
     } Catch {
         If (++$failures -le $maxWatchFailures) {
             Write-Warning $_
         } Else {
             Throw;
-        } 
+        }
     }
-    $newActiveComments = @($pullRequestThreads.value | ?{ !$_.isDeleted -and $_.status -eq "active" }).count
+    $newActiveComments =
+        @($pullRequestThreads.value | ?{ !$_.isDeleted -and $_.status -eq "active" }).count
     If ($newActiveComments -gt $activeComments) {
-        New-BurntToastNotification -Text "$($newActiveComments - $activeComments) new comments on pull request $pullRequestId" -Button $toastButton -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
+        New-BurntToastNotification `
+            -Text "$($newActiveComments - $activeComments) new comments on pull request $pullRequestId" `
+            -Button $toastButton `
+            -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
     }
     $activeComments = $newActiveComments
-    
+
     $newApprovalCount = @($pullRequestReviewers.value | ?{$_.vote -gt 0}).count
     If ($newApprovalCount -gt $approvalCount) {
-        New-BurntToastNotification -Text "$($newApprovalCount - $approvalCount) new approvals on pull request $pullRequestId" -Button $toastButton -AppLogo "$PSScriptRoot/Images/StatusOK_256x.png"
+        New-BurntToastNotification `
+            -Text "$($newApprovalCount - $approvalCount) new approvals on pull request $pullRequestId" `
+            -Button $toastButton `
+            -AppLogo "$PSScriptRoot/Images/StatusOK_256x.png"
     }
     $approvalCount = $newApprovalCount
 
     $newRejectCount = @($pullRequestReviewers.value | ?{$_.vote -lt 0}).count
     If ($newRejectCount -gt $rejectCount) {
-        New-BurntToastNotification -Text "$($newRejectCount - $rejectCount) new rejects on pull request $pullRequestId" -Button $toastButton -AppLogo "$PSScriptRoot/Images/StatusWarning_256x.png"
+        New-BurntToastNotification `
+            -Text "$($newRejectCount - $rejectCount) new rejects on pull request $pullRequestId" `
+            -Button $toastButton `
+            -AppLogo "$PSScriptRoot/Images/StatusWarning_256x.png"
     }
     $rejectCount = $newRejectCount
 
     Write-Host "Pull request $pullRequestId status: $($pullRequest.status)" 
     if ($pullRequest.status -eq "active") {
         Start-Sleep -s $pollTimeoutSec
+    }
+
+    if ($host.ui.RawUI.ReadKey("NoEcho,IncludeKeyUp").Character -eq 'a') {
+        & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest
     }
 }
 Until($pullRequest.status -ne "active")
