@@ -29,10 +29,11 @@ $urlBase = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullReq
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
 $title =
-    GetCommitMessages `
+    (GetCommitMessages `
         -sourceBranchName $sourceBranchName `
-        -targetBranchName $remoteName/$targetBranchName `
-    | Select-Object -First 1
+        -targetBranchName $remoteName/$targetBranchName) `
+    + "Merge $sourceBranchName to $targetBranchName" `
+    | Select-Object -First 1 `
 
 $workItems
 $body = @{
