@@ -21,7 +21,10 @@ if (!$repositoryName) {
 $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 Start-Process $browseUrl
 
-Start-Process -LoadUserProfile "PowerShell" "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName"
+Start-Process `
+    -LoadUserProfile "PowerShell" `
+    "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
+    -WindowStyle Minimized
 
 $url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
 $pullRequestOpenUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
