@@ -1,7 +1,8 @@
 @{
-    'Rules' = @{
-        'PSAvoidUsingCmdletAliases' = @{
-            'allowlist' = @('%', '?')
+    Rules = @{
+        PSAvoidUsingCmdletAliases = @{
+            allowlist = @('%', '?')
         }
     }
+    ExcludeRules = @('PSAvoidUsingWriteHost')
 }

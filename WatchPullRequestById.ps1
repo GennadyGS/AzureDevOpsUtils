@@ -38,17 +38,17 @@ Do {
     Try {
         $pullRequest = Invoke-RestMethod `
             -Uri $url `
-            -Method 'GET' `
+            -Method GET `
             -Body $body `
             -Headers @{Authorization = $authorization }
         $pullRequestThreads = Invoke-RestMethod `
             -Uri $url/threads `
-            -Method 'GET' `
+            -Method GET `
             -Body $body `
             -Headers @{Authorization = $authorization }
         $pullRequestReviewers = Invoke-RestMethod `
             -Uri $url/reviewers `
-            -Method 'GET' `
+            -Method GET `
             -Body $body `
             -Headers @{Authorization = $authorization }
         $failures = 0
@@ -87,13 +87,15 @@ Do {
     }
     $rejectCount = $newRejectCount
 
-    Write-Host "Pull request $pullRequestId status: $($pullRequest.status)" 
+    Write-Host "Pull request $pullRequestId to $repositoryName status: $($pullRequest.status)"
     if ($pullRequest.status -eq "active") {
         Start-Sleep -s $pollTimeoutSec
     }
 
-    if ($host.ui.RawUI.ReadKey("NoEcho,IncludeKeyUp").Character -eq 'a') {
-        & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest
+    if ($host.UI.RawUI.KeyAvailable) {
+        if ($host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp").Character -eq 'a') {
+            & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest
+        }
     }
 }
 Until($pullRequest.status -ne "active")
@@ -104,11 +106,17 @@ If ($pullRequest.status -eq "abandoned") {
 } ElseIf ($pullRequest.status -eq "completed") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
-New-BurntToastNotification -Text "Pull request $pullRequestId $($pullRequest.status)" -Button $toastButton -AppLogo $imageUri
+New-BurntToastNotification `
+    -Text "Pull request $pullRequestId $($pullRequest.status)" `
+    -Button $toastButton `
+    -AppLogo $imageUri
 
 if ($watchCiBuild -and ($pullRequest.status -eq "completed")) {
     "Pull request is complete; watching CI build..."
     $targetBranchName = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value
     "Target branch: $targetBranchName"
-    & $PSScriptRoot/WatchBuild.ps1 -sourceBranchName $targetBranchName -repositoryName $repositoryName -remoteName $remoteName
+    & $PSScriptRoot/WatchBuild.ps1 `
+        -sourceBranchName $targetBranchName `
+        -repositoryName $repositoryName `
+        -remoteName $remoteName
 }
