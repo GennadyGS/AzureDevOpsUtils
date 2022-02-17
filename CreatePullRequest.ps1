@@ -2,7 +2,7 @@ param (
     $targetBranchName = "master",
     $sourceBranchName = "",
     $remoteName = "origin",
-    [switch] $watchCiBuild = $true
+    $watchCiBuild = $true
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,7 +24,8 @@ RunGit "push"
 
 $url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?api-version=1.0"
 
-$workItems = GetWorkItems -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
+$workItems = GetWorkItems `
+    -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
 $workItems
 $body = @{
     sourceRefName = "refs/heads/$sourceBranchName";
@@ -33,12 +34,17 @@ $body = @{
     workItemRefs = @(GetWorkItemRefs $workItems)
 }
 
-$result = Invoke-RestMethod -Uri $url -Method 'Post' -Body ($body | ConvertTo-Json) -Headers @{Authorization = $authorization; "Content-Type" = "application/json"} 
+$result = Invoke-RestMethod `
+    -Uri $url `
+    -Method 'Post' `
+    -Body ($body | ConvertTo-Json) `
+    -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
 $pullRequestId = $result.pullRequestId
 Write-Host "Pull request id: $pullRequestId"
 
 if ($workItems) {
-	$workItemNames = [string]::Join(", ", ($workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}))
+	$workItemNameList = $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}
+    $workItemNames = [string]::Join(", ", $workItemNameList)
     $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
     Try {
         Set-Clipboard -Value "Pull request to $repositoryName for $workItemNames`: $browseUrl"
@@ -47,4 +53,8 @@ if ($workItems) {
     }
 }
 
-& $PSScriptRoot/WatchPullRequestById.ps1 -pullRequestId $pullRequestId -repositoryName $repositoryName -remoteName $remoteName -watchCiBuild:$watchCiBuild
+& $PSScriptRoot/WatchPullRequestById.ps1 `
+    -pullRequestId $pullRequestId `
+    -repositoryName $repositoryName `
+    -remoteName $remoteName `
+    -watchCiBuild:$watchCiBuild
