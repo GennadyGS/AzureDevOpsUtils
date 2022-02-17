@@ -6,6 +6,8 @@ Function LoadSettings {
     $baseTfsCollectionUrl = "$baseTfsInstanceUrl/$collection"
     $encodedPat = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$pat"))
     $authorization = "Basic $encodedPat"
+    $apiVersion = "6.0"
+    $apiVersionParam = "?api-version=$apiVersion"
 }
 Function FindBuild {
     param (

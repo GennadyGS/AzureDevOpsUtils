@@ -2,7 +2,9 @@ param (
     $targetBranchName = "master",
     $sourceBranchName = "",
     $remoteName = "origin",
-    $watchCiBuild = $true
+    $watchCiBuild = $true,
+    [switch]$draft,
+    [switch]$autoComplete
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,7 +24,7 @@ $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 
 RunGit "push"
 
-$url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?api-version=1.0"
+$urlBase = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests"
 
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
@@ -35,19 +37,36 @@ $body = @{
     sourceRefName = "refs/heads/$sourceBranchName"
     targetRefName = "refs/heads/$targetBranchName"
     title = $title
+    description = ""
     workItemRefs = @(GetWorkItemRefs $workItems)
+    isDraft = $draft.IsPresent
 }
 
 $result = Invoke-RestMethod `
-    -Uri $url `
-    -Method 'Post' `
+    -Uri $urlBase$apiVersionParam `
+    -Method 'POST' `
     -Body ($body | ConvertTo-Json) `
     -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
 $pullRequestId = $result.pullRequestId
 Write-Host "Pull request id: $pullRequestId with title '$title'"
 
+if ($autoComplete) {
+    $patchBody = @{
+        autoCompleteSetBy = @{ id = $result.createdBy.id }
+        completionOptions = @{
+            deleteSourceBranch = $true
+            mergeCommitMessage = $title
+        }
+    }
+    $patchResult = Invoke-RestMethod `
+        -Uri $urlBase/$pullRequestId$apiVersionParam `
+        -Method 'PATCH' `
+        -Body ($patchBody | ConvertTo-Json) `
+        -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
+}
+
 if ($workItems) {
-	$workItemNameList = $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}
+    $workItemNameList = $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}
     $workItemNames = [string]::Join(", ", $workItemNameList)
     $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
     Try {
