@@ -26,15 +26,15 @@ $url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequest
 
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
-$firstCommitMessage =
+$title =
     GetCommitMessages -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName `
     | Select-Object -First 1
 
 $workItems
 $body = @{
-    sourceRefName = "refs/heads/$sourceBranchName";
-    targetRefName = "refs/heads/$targetBranchName";
-    title = $firstCommitMessage;
+    sourceRefName = "refs/heads/$sourceBranchName"
+    targetRefName = "refs/heads/$targetBranchName"
+    title = $title
     workItemRefs = @(GetWorkItemRefs $workItems)
 }
 
@@ -44,7 +44,7 @@ $result = Invoke-RestMethod `
     -Body ($body | ConvertTo-Json) `
     -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
 $pullRequestId = $result.pullRequestId
-"Pull request id: $pullRequestId"
+Write-Host "Pull request id: $pullRequestId with title '$title'"
 
 if ($workItems) {
 	$workItemNameList = $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`""}
