@@ -22,14 +22,14 @@ $failures = 0
 While ($build.status -ne "completed") {
     Start-Sleep -s 5
     Try {
-        $build = Invoke-RestMethod -Uri $buildUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization } 
+        $build = Invoke-RestMethod -Uri $buildUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization }
         $failures = 0
     } Catch {
         If (++$failures -le $maxWatchFailures) {
             Write-Warning $_
         } Else {
             Throw;
-        } 
+        }
     }
     if ($build.status -ne $currentStatus) {
         New-BurntToastNotification -Text "Build $($build.buildNumber) status changed to $($build.status)" -Button $toastButton -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
