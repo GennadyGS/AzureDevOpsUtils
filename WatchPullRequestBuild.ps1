@@ -18,7 +18,7 @@ Function WaitForBuild {
     Do {
         $failures = 0
         Try {
-            $pullRequest = Invoke-RestMethod -Uri $pullRequestUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization } 
+            $pullRequest = Invoke-RestMethod -Uri $pullRequestUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization }
             if ($pullRequest.status -ne "active") {
                 Write-Host "Pull request $pullRequestId is finished with result $($pullRequest.status)"
                 Return
@@ -35,9 +35,9 @@ Function WaitForBuild {
                 Write-Warning $_
             } Else {
                 Throw;
-            } 
+            }
         }
-    
+
         if (!$buildId) {
             Write-Host "Build is not found for pull request $pullRequestId. Waiting for build start."
             Start-Sleep -s $pollTimeoutSec
