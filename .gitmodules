@@ -4,3 +4,6 @@
 [submodule "GitUtils"]
 	path = GitUtils
 	url = https://github.com/GennadyGS/gitUtils.git
+[submodule "PsClipboardUtils"]
+	path = PsClipboardUtils
+	url = https://github.com/GennadyGS/PsClipboardUtils.git
