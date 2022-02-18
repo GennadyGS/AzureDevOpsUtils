@@ -13,7 +13,11 @@ $buildOpenUrl = "$baseTfsCollectionUrl/_build/index?buildId=$buildId"
 
 $toastButton = New-BTButton -Content 'Open build' -Arguments $buildOpenUrl
 
-$build = Invoke-RestMethod -Uri $buildUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization }
+$build = Invoke-RestMethod `
+    -Uri $buildUrl `
+    -Method GET `
+    -Body $body `
+    -Headers @{ Authorization = $authorization }
 Write-Host "Build number: $($build.buildNumber)"
 Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
@@ -33,7 +37,7 @@ While ($build.status -ne "completed") {
     }
     if ($build.status -ne $currentStatus) {
         New-BurntToastNotification `
-            -Text "Build $($build.buildNumber) for $(build.repository.name) status changed to $($build.status)" `
+            -Text "Build $($build.buildNumber) for $($build.repository.name) status changed to $($build.status)" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
         $currentStatus = $build.status
@@ -49,11 +53,11 @@ If ($build.result -eq "failed") {
 }
 Write-Output $build.result
 New-BurntToastNotification `
-    -Text "Build $($build.buildNumber) for $(build.repository.name) $($build.result)" `
+    -Text "Build $($build.buildNumber) for $($build.repository.name) $($build.result)" `
     -Button $toastButton `
     -AppLogo $imageUri
 Try {
-    Set-Clipboard -Value "$(build.repository.name) $($build.buildNumber)"
+    Set-Clipboard -Value "$($build.repository.name) $($build.buildNumber)"
 } Catch {
     Write-Warning $_
 }
