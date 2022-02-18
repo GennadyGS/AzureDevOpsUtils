@@ -28,14 +28,14 @@ $urlBase = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullReq
 
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
+$workItems
+
 $title =
     (GetCommitMessages `
         -sourceBranchName $sourceBranchName `
         -targetBranchName $remoteName/$targetBranchName) `
     + "Merge $sourceBranchName to $targetBranchName" `
     | Select-Object -First 1 `
-
-$workItems
 $body = @{
     sourceRefName = "refs/heads/$sourceBranchName"
     targetRefName = "refs/heads/$targetBranchName"
@@ -47,9 +47,9 @@ $body = @{
 
 $result = Invoke-RestMethod `
     -Uri $urlBase$apiVersionParam `
-    -Method 'POST' `
+    -Method POST `
     -Body ($body | ConvertTo-Json) `
-    -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
+    -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 $pullRequestId = $result.pullRequestId
 Write-Host "Pull request created; id: $pullRequestId; title: '$title'"
 
