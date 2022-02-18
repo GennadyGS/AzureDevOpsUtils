@@ -63,7 +63,7 @@ Do {
         @($pullRequestThreads.value | ?{ !$_.isDeleted -and $_.status -eq "active" }).count
     If ($newActiveComments -gt $activeComments) {
         New-BurntToastNotification `
-            -Text "$($newActiveComments - $activeComments) new comments on pull request $pullRequestId" `
+            -Text "$($newActiveComments - $activeComments) new comments on pull request $pullRequestId to $repositoryName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
     }
@@ -72,7 +72,7 @@ Do {
     $newApprovalCount = @($pullRequestReviewers.value | ?{$_.vote -gt 0}).count
     If ($newApprovalCount -gt $approvalCount) {
         New-BurntToastNotification `
-            -Text "$($newApprovalCount - $approvalCount) new approvals on pull request $pullRequestId" `
+            -Text "$($newApprovalCount - $approvalCount) new approvals on pull request $pullRequestId to $repositoryName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusOK_256x.png"
     }
@@ -81,7 +81,7 @@ Do {
     $newRejectCount = @($pullRequestReviewers.value | ?{$_.vote -lt 0}).count
     If ($newRejectCount -gt $rejectCount) {
         New-BurntToastNotification `
-            -Text "$($newRejectCount - $rejectCount) new rejects on pull request $pullRequestId" `
+            -Text "$($newRejectCount - $rejectCount) new rejects on pull request $pullRequestId to $repositoryName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusWarning_256x.png"
     }
@@ -107,7 +107,7 @@ If ($pullRequest.status -eq "abandoned") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
 New-BurntToastNotification `
-    -Text "Pull request $pullRequestId $($pullRequest.status)" `
+    -Text "Pull request $pullRequestId to $repositoryName $($pullRequest.status)" `
     -Button $toastButton `
     -AppLogo $imageUri
 

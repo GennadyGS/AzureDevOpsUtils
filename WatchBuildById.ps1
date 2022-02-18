@@ -32,7 +32,10 @@ While ($build.status -ne "completed") {
         }
     }
     if ($build.status -ne $currentStatus) {
-        New-BurntToastNotification -Text "Build $($build.buildNumber) status changed to $($build.status)" -Button $toastButton -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
+        New-BurntToastNotification `
+            -Text "Build $($build.buildNumber) for $(build.repository.name) status changed to $($build.status)" `
+            -Button $toastButton `
+            -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
         $currentStatus = $build.status
     }
     Write-Host "Build $($build.buildNumber) status: $($build.status)"
@@ -45,9 +48,12 @@ If ($build.result -eq "failed") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
 Write-Output $build.result
-New-BurntToastNotification -Text "Build $($build.buildNumber) $($build.result)" -Button $toastButton -AppLogo $imageUri
+New-BurntToastNotification `
+    -Text "Build $($build.buildNumber) for $(build.repository.name) $($build.result)" `
+    -Button $toastButton `
+    -AppLogo $imageUri
 Try {
-    Set-Clipboard -Value "Build $($build.buildNumber) $($build.result)"
+    Set-Clipboard -Value "$(build.repository.name) $($build.buildNumber)"
 } Catch {
     Write-Warning $_
 }
