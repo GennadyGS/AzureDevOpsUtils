@@ -31,11 +31,11 @@ $workItems = GetWorkItems `
 $workItems
 
 $title =
-    (GetCommitMessages `
+    @(GetCommitMessages `
         -sourceBranchName $sourceBranchName `
         -targetBranchName $remoteName/$targetBranchName) `
-    + "Merge $sourceBranchName to $targetBranchName" `
-    | Select-Object -First 1 `
+    + @("Merge $sourceBranchName to $targetBranchName") `
+    | Select-Object -First 1
 $body = @{
     sourceRefName = "refs/heads/$sourceBranchName"
     targetRefName = "refs/heads/$targetBranchName"
@@ -63,7 +63,9 @@ if ($workItems) {
     $workItemNames = [string]::Join(", ", $workItemNameList)
     $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
     Try {
-        Set-Clipboard -Value "Pull request to $repositoryName for $workItemNames`: $browseUrl"
+        & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 `
+            -Text "Pull request to $repositoryName for $workItemNames`: $browseUrl" `
+            -Html "<span><a href=""$browseUrl"">Pull request $pullRequestId to $repositoryName</a>: $title</span>"`
     } Catch {
         Write-Warning $_
     }
