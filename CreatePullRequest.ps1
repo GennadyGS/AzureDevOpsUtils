@@ -31,11 +31,11 @@ $workItems = GetWorkItems `
 $workItems
 
 $title =
-    @(GetCommitMessages `
+    @("Merge $sourceBranchName to $targetBranchName") `
+    + @(GetCommitMessages `
         -sourceBranchName $sourceBranchName `
         -targetBranchName $remoteName/$targetBranchName) `
-    + @("Merge $sourceBranchName to $targetBranchName") `
-    | Select-Object -First 1
+    | Select-Object -Last 1
 $body = @{
     sourceRefName = "refs/heads/$sourceBranchName"
     targetRefName = "refs/heads/$targetBranchName"
