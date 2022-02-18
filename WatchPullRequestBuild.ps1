@@ -12,15 +12,21 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-$pullRequestUrl = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
+$pullRequestUrl = `
+    "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
 
 Function WaitForBuild {
     Do {
         $failures = 0
         Try {
-            $pullRequest = Invoke-RestMethod -Uri $pullRequestUrl -Method 'Get' -Body $body -Headers @{Authorization = $authorization }
+            $pullRequest = Invoke-RestMethod `
+                -Uri $pullRequestUrl `
+                -Method GET `
+                -Body $body `
+                -Headers @{ Authorization = $authorization }
             if ($pullRequest.status -ne "active") {
-                Write-Host "Pull request $pullRequestId is finished with result $($pullRequest.status)"
+                Write-Host `
+                    "Pull request $pullRequestId is finished with result $($pullRequest.status)"
                 Return
             }
 
