@@ -51,24 +51,20 @@ $result = Invoke-RestMethod `
     -Body ($body | ConvertTo-Json) `
     -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 $pullRequestId = $result.pullRequestId
-Write-Host "Pull request created; id: $pullRequestId; title: '$title'"
+$pullRequestName = "$pullRequestId to $repositoryName"
+Write-Host "PR $pullRequestName created: '$title'"
 
 if ($autoComplete) {
     & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $result
 }
 
-if ($workItems) {
-    $workItemNameList =
-        $workItems | %{ "pbi-$_`: `"$(& $PSScriptRoot/GetWorkItemTitle.ps1 $_ )`"" }
-    $workItemNames = [string]::Join(", ", $workItemNameList)
-    $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
-    Try {
-        & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 `
-            -Text "Pull request to $repositoryName for $workItemNames`: $browseUrl" `
-            -Html "<span><a href=""$browseUrl"">Pull request $pullRequestId to $repositoryName</a>: $title</span>"`
-    } Catch {
-        Write-Warning $_
-    }
+$browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+Try {
+    & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 `
+        -Text "PR $pullRequestName`: $title" `
+        -Html "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $title</span>"`
+} Catch {
+    Write-Warning $_
 }
 
 & $PSScriptRoot/WatchPullRequestById.ps1 `

@@ -1,6 +1,6 @@
 param (
-    $sourceBranchName = "",
-    $repositoryName = "",
+    $sourceBranchName,
+    $repositoryName,
     $remoteName = "origin",
     $top = 10
 )
@@ -20,7 +20,7 @@ if (!$sourceBranchName) {
 }
 
 $buildId = FindBuild `
-    -parameter "`"system.pullRequest.sourceBranch`":`"refs/heads/$sourceBranchName`"" `
+    -sourceBranch $sourceBranchName `
     -repositoryName $repositoryName `
     -top $top
 
@@ -28,6 +28,6 @@ if (!$buildId) {
     Write-Warning "Build is not found for source branch $sourceBranchName and repository $repositoryName"
     return
 }
-Write-Output "Build id: $buildId"
+Write-Host "Build $buildId is found"
 
 & $PSScriptRoot/WatchBuildById.ps1 $buildId

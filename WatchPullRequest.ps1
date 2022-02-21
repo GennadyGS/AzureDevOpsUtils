@@ -22,7 +22,7 @@ if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 $url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
 
 $resp = Invoke-RestMethod -Uri $url -Headers @{Authorization = $authorization}
- 
+
 $pullRequestId = $resp.value `
     | ? {$_.sourceRefName -Match "refs/heads/$sourceBranchName" } `
     | ? {$_.targetRefName -Match "refs/heads/$targetBranchName" } `
@@ -30,9 +30,11 @@ $pullRequestId = $resp.value `
     | Select-Object -first 1
 
 if (!$pullRequestId) {
-    throw "Cannot find pull request from branch $sourceBranchName to branch $targetBranchName"
+    throw "Cannot find PR from branch $sourceBranchName to branch $targetBranchName"
 }
 
-Write-Output "Pull request id: $pullRequestId"
-
-& $PSScriptRoot/WatchPullRequestById.ps1 -pullRequestId $pullRequestId -repositoryName $repositoryName -remoteName $remoteName -watchCiBuild:$watchCiBuild
+& $PSScriptRoot/WatchPullRequestById.ps1 `
+    -pullRequestId $pullRequestId `
+    -repositoryName $repositoryName `
+    -remoteName $remoteName `
+    -watchCiBuild:$watchCiBuild

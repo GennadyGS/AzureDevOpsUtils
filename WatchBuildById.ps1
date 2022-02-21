@@ -1,6 +1,7 @@
 param (
     [Parameter(Mandatory=$true)]
-    $buildId
+    $buildId,
+    [switch]$enableStatusChangeNotifications
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,10 +19,14 @@ $build = Invoke-RestMethod `
     -Method GET `
     -Body $body `
     -Headers @{ Authorization = $authorization }
-Write-Host "Repository name: $($build.repository.name)"
+$buildName = "$($build.definition.name) $($build.buildNumber)"
+
+Write-Host "Build id: $($build.id)"
+Write-Host "Definition name: $($build.definition.name)"
 Write-Host "Build number: $($build.buildNumber)"
 Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
+
 $currentStatus = ""
 $failures = 0
 While ($build.status -ne "completed") {
@@ -37,23 +42,25 @@ While ($build.status -ne "completed") {
         }
     }
     if ($build.status -ne $currentStatus) {
-        New-BurntToastNotification `
-            -Text "Build $($build.repository.name) $($build.buildNumber) status changed to $($build.status)" `
+        $currentStatus = $build.status
+        if ($enableStatusChangeNotifications) {
+            New-BurntToastNotification `
+            -Text "Build $buildName status changed to $($build.status)" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
-        $currentStatus = $build.status
+        }
     }
-    Write-Host "Build $($build.repository.name) $($build.buildNumber) status: $($build.status)"
+    Write-Host "Build $buildName status: $($build.status)"
 }
 
 Write-Output $build.result
-Write-Host "Build $($build.repository.name) $($build.buildNumber) finished with status $($build.result)"
+Write-Host "Build $buildName is finished with status $($build.result)"
 If ($build.result -eq "failed") {
     $imageUri = "$PSScriptRoot/Images/StatusCriticalError_256x.png"
 } ElseIf ($build.result -eq "succeeded") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
-$message = "Build $($build.repository.name) $($build.buildNumber) $($build.result)"
+$message = "Build $buildName $($build.result)"
 New-BurntToastNotification `
     -Text $message `
     -Button $toastButton `

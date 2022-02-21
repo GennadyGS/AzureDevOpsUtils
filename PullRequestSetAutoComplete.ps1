@@ -3,6 +3,8 @@ param (
     $deleteSourceBranch = $true
 )
 
+$pullRequestName = "$($pullRequest.pullRequestId) to $($pullRequest.repository.name)"
+
 $setAutoCompleteBody = @{
     autoCompleteSetBy = @{ id = $pullRequest.createdBy.id }
     completionOptions = @{
@@ -18,4 +20,4 @@ Invoke-RestMethod `
     -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" } `
 | Out-Null
 
-Write-Host "Pull request $($pullRequest.pullRequestId) is set to autoComplete"
+Write-Host "PR $pullRequestName is set to autoComplete"

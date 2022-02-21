@@ -1,12 +1,12 @@
 param (
-    [Parameter(Mandatory=$true)]
-    $pullRequestId,
+    [Parameter(Mandatory=$true)] $pullRequestId,
     $repositoryName,
     [switch] $watchCiBuild,
     $remoteName = "origin",
     $pollTimeoutSec = 5
 )
 
+$pullRequestName = "$pullRequestId to $repositoryName"
 $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 . LoadSettings
@@ -28,7 +28,7 @@ Start-Process `
 
 $url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
 $pullRequestOpenUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
-$toastButton = New-BTButton -Content 'Open pull request' -Arguments $pullRequestOpenUrl
+$toastButton = New-BTButton -Content 'Open PR' -Arguments $pullRequestOpenUrl
 $activeComments = 0
 $approvalCount = 0
 $rejectCount = 0
@@ -63,7 +63,7 @@ Do {
         @($pullRequestThreads.value | ?{ !$_.isDeleted -and $_.status -eq "active" }).count
     If ($newActiveComments -gt $activeComments) {
         New-BurntToastNotification `
-            -Text "$($newActiveComments - $activeComments) new comments on pull request $pullRequestId to $repositoryName" `
+            -Text "$($newActiveComments - $activeComments) new comments on PR $pullRequestName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
     }
@@ -72,7 +72,7 @@ Do {
     $newApprovalCount = @($pullRequestReviewers.value | ?{$_.vote -gt 0}).count
     If ($newApprovalCount -gt $approvalCount) {
         New-BurntToastNotification `
-            -Text "$($newApprovalCount - $approvalCount) new approvals on pull request $pullRequestId to $repositoryName" `
+            -Text "$($newApprovalCount - $approvalCount) new approvals on PR $pullRequestName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusOK_256x.png"
     }
@@ -81,40 +81,42 @@ Do {
     $newRejectCount = @($pullRequestReviewers.value | ?{$_.vote -lt 0}).count
     If ($newRejectCount -gt $rejectCount) {
         New-BurntToastNotification `
-            -Text "$($newRejectCount - $rejectCount) new rejects on pull request $pullRequestId to $repositoryName" `
+            -Text "$($newRejectCount - $rejectCount) new rejects on PR $pullRequestName" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusWarning_256x.png"
     }
     $rejectCount = $newRejectCount
 
-    Write-Host "Pull request $pullRequestId to $repositoryName status: $($pullRequest.status)"
+    Write-Host "PR $pullRequestName status: $($pullRequest.status)"
     if ($pullRequest.status -eq "active") {
         Start-Sleep -s $pollTimeoutSec
     }
 
     if ($host.UI.RawUI.KeyAvailable) {
-        if ($host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp").Character -eq 'a') {
+        $key = $host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp, IncludeKeyDown")
+        if ($key.Character -eq 'a') {
             & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest
         }
+        $host.UI.RawUI.FlushInputBuffer()
     }
 }
 Until($pullRequest.status -ne "active")
 
-Write-Host "Pull request $pullRequestId finished with result $($pullRequest.status)"
+Write-Host "PR $pullRequestName is finished with result $($pullRequest.status)"
 If ($pullRequest.status -eq "abandoned") {
     $imageUri = "$PSScriptRoot/Images/StatusCriticalError_256x.png"
 } ElseIf ($pullRequest.status -eq "completed") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
 New-BurntToastNotification `
-    -Text "Pull request $pullRequestId to $repositoryName $($pullRequest.status)" `
+    -Text "PR $pullRequestName $($pullRequest.status)" `
     -Button $toastButton `
     -AppLogo $imageUri
 
 if ($watchCiBuild -and ($pullRequest.status -eq "completed")) {
-    "Pull request is complete; watching CI build..."
+    Write-Host "PR is completed; watching CI build..."
+    Start-Sleep -Seconds 10
     $targetBranchName = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value
-    "Target branch: $targetBranchName"
     & $PSScriptRoot/WatchBuild.ps1 `
         -sourceBranchName $targetBranchName `
         -repositoryName $repositoryName `

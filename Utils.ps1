@@ -12,8 +12,7 @@ Function LoadSettings {
 
 Function FindBuild {
     param (
-        [Parameter(Mandatory=$true)]
-        $repositoryName,
+        [Parameter(Mandatory=$true)] $repositoryName,
         $sourceBranchName,
         $reason,
         $parameter,
@@ -24,12 +23,6 @@ Function FindBuild {
     . LoadSettings
     . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-    $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
-
-    if (!$repositoryId) {
-        throw "Repository $repositoryName is not found"
-    }
-
     $reasonArg = if ($reason) { "&reasonFilter=$reason" }
     $buildsUrl = `
         "$baseTfsCollectionUrl/_apis/build/builds?`$top=$top$reasonArg&QueryOrder=startTimeDescending"
@@ -39,7 +32,7 @@ Function FindBuild {
         -Headers @{ Authorization = $authorization }
 
     $builds.value `
-        | ?  { $_.repository.id -eq $repositoryId } `
+        | ?  { $_.repository.name -eq $repositoryName } `
         | ?  { !($parameter) -or ($_.parameters -and $_.parameters.Contains($parameter)) } `
         | ?  { !($sourceBranchName) -or ($_.sourceBranch -eq "refs/heads/$sourceBranchName") } `
         | ?  { !($fromId) -or ($_.id -gt $fromId) } `

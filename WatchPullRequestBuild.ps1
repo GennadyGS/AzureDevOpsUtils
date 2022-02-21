@@ -1,7 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)]
-    $pullRequestId,
-    $repositoryName = "",
+    [Parameter(Mandatory=$true)] $pullRequestId,
+    $repositoryName,
     $remoteName = "origin",
     $top = 10,
     $pollTimeoutSec = 10
@@ -12,8 +11,14 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
+if (!$repositoryName) {
+    $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
+    $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
+}
+
 $pullRequestUrl = `
     "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
+$pullRequestName = "$pullRequestId to $repositoryName"
 
 Function WaitForBuild {
     Do {
@@ -25,8 +30,7 @@ Function WaitForBuild {
                 -Body $body `
                 -Headers @{ Authorization = $authorization }
             if ($pullRequest.status -ne "active") {
-                Write-Host `
-                    "Pull request $pullRequestId is finished with result $($pullRequest.status)"
+                Write-Host "PR $pullRequestName is finished with result $($pullRequest.status)"
                 Return
             }
 
@@ -45,12 +49,12 @@ Function WaitForBuild {
         }
 
         if (!$buildId) {
-            Write-Host "Build is not found for pull request $pullRequestId. Waiting for build start."
+            Write-Host "Build is not found for PR $pullRequestName. Waiting for build start."
             Start-Sleep -s $pollTimeoutSec
         }
     }
     Until($buildId)
-    Write-Host "Build is found for pull request $pullRequestId with id $buildId"
+    Write-Host "Build $buildId is found for PR $pullRequestName"
     $buildId
 }
 
