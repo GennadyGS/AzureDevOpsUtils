@@ -18,6 +18,7 @@ $build = Invoke-RestMethod `
     -Method GET `
     -Body $body `
     -Headers @{ Authorization = $authorization }
+Write-Host "Repository name: $($build.repository.name)"
 Write-Host "Build number: $($build.buildNumber)"
 Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
@@ -37,27 +38,28 @@ While ($build.status -ne "completed") {
     }
     if ($build.status -ne $currentStatus) {
         New-BurntToastNotification `
-            -Text "Build $($build.buildNumber) for $($build.repository.name) status changed to $($build.status)" `
+            -Text "Build $($build.repository.name) $($build.buildNumber) status changed to $($build.status)" `
             -Button $toastButton `
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
         $currentStatus = $build.status
     }
-    Write-Host "Build $($build.buildNumber) status: $($build.status)"
+    Write-Host "Build $($build.repository.name) $($build.buildNumber) status: $($build.status)"
 }
 
-Write-Host "Build $($build.buildNumber) finished with result $($build.result)"
+Write-Output $build.result
+Write-Host "Build $($build.repository.name) $($build.buildNumber) finished with status $($build.result)"
 If ($build.result -eq "failed") {
     $imageUri = "$PSScriptRoot/Images/StatusCriticalError_256x.png"
 } ElseIf ($build.result -eq "succeeded") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
-Write-Output $build.result
+$message = "Build $($build.repository.name) $($build.buildNumber) $($build.result)"
 New-BurntToastNotification `
-    -Text "Build $($build.buildNumber) for $($build.repository.name) $($build.result)" `
+    -Text $message `
     -Button $toastButton `
     -AppLogo $imageUri
 Try {
-    Set-Clipboard -Value "$($build.repository.name) $($build.buildNumber)"
+    Set-Clipboard -Value $message
 } Catch {
     Write-Warning $_
 }
