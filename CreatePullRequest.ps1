@@ -61,9 +61,9 @@ if ($autoComplete) {
 $browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 Try {
     $encodedTitle = [System.Net.WebUtility]::HtmlEncode($title)
-    & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 `
-        -Text "PR $pullRequestName`: $title" `
-        -Html "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"`
+    $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"
+    $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))
+    & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 -Html $html -Text $text
 } Catch {
     Write-Warning $_
 }
