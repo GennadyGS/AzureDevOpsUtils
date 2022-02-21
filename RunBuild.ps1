@@ -1,6 +1,5 @@
 param (
-    [Parameter(Mandatory=$true)]
-    $definition,
+    [Parameter(Mandatory=$true)] $definition,
     $repositoryName,
     $remoteName = "origin"
 )

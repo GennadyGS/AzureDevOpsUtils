@@ -1,6 +1,5 @@
 param (
-    [Parameter(Mandatory=$true)]
-    $buildId,
+    [Parameter(Mandatory=$true)] $buildId,
     [switch]$enableStatusChangeNotifications
 )
 

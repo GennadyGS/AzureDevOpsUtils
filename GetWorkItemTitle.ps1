@@ -1,6 +1,5 @@
 param (
-    [Parameter(Mandatory=$true)]
-    $id
+    [Parameter(Mandatory=$true)] $id
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,6 +8,6 @@ $ErrorActionPreference = "Stop"
 
 $url = "$baseTfsInstanceUrl/_apis/wit/workItems/$id"
 
-$workItem = Invoke-RestMethod -Uri $url -Method 'Get' -Headers @{Authorization = $authorization } 
+$workItem = Invoke-RestMethod -Uri $url -Method 'Get' -Headers @{Authorization = $authorization }
 
 $workItem.fields."System.Title"
