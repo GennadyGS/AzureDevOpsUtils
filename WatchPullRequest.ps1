@@ -19,7 +19,7 @@ if (!$repositoryName) {
 
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 
-$url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
+$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
 
 $resp = Invoke-RestMethod -Uri $url -Headers @{Authorization = $authorization}
 

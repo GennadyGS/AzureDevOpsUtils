@@ -16,7 +16,7 @@ if (!$repositoryName) {
     $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 }
 
-$url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
+$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
 
 $resp = Invoke-RestMethod -Uri $url -Headers @{Authorization = $authorization}
 

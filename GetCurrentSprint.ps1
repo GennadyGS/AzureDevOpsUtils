@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 . LoadSettings
 
-$url = "$baseTfsCollectionUrl/$teamName/_apis/work/TeamSettings/Iterations?timeframe=current"
+$url = "$baseCollectionUrl/$teamName/_apis/work/TeamSettings/Iterations?timeframe=current"
 
 $resp = Invoke-RestMethod -Uri $url -Headers @{Authorization = $authorization}
 

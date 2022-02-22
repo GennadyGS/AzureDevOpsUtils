@@ -17,7 +17,7 @@ if (!$repositoryName) {
 }
 
 $pullRequestUrl = `
-    "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
+    "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
 $pullRequestName = "$pullRequestId to $repositoryName"
 
 Function WaitForBuild {

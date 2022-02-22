@@ -8,8 +8,8 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 Import-Module $PSScriptRoot/PowershellModules/BurntToast/BurntToast/BurntToast.psm1
 
-$buildUrl = "$baseTfsCollectionUrl/_apis/build/builds/$buildId"
-$buildOpenUrl = "$baseTfsCollectionUrl/_build/index?buildId=$buildId"
+$buildUrl = "$baseCollectionUrl/_apis/build/builds/$buildId"
+$buildOpenUrl = "$baseCollectionUrl/_build/index?buildId=$buildId"
 
 $toastButton = New-BTButton -Content 'Open build' -Arguments $buildOpenUrl
 

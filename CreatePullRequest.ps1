@@ -24,7 +24,7 @@ $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 
 RunGit "push"
 
-$urlBase = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests"
+$urlBase = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests"
 
 $workItems = GetWorkItems `
     -sourceBranchName $sourceBranchName -targetBranchName $remoteName/$targetBranchName
@@ -58,7 +58,7 @@ if ($autoComplete) {
     & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $result
 }
 
-$browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+$browseUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 Try {
     $encodedTitle = [System.Net.WebUtility]::HtmlEncode($title)
     $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"

@@ -3,7 +3,7 @@ Function LoadSettings {
     If (Test-Path "$PSScriptRoot/Settings.private.ps1") {
         . $PSScriptRoot/Settings.private.ps1
     }
-    $baseTfsCollectionUrl = "$baseTfsInstanceUrl/$collection"
+    $baseCollectionUrl = "$baseTfsInstanceUrl/$collection"
     $encodedPat = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$pat"))
     $authorization = "Basic $encodedPat"
     $apiVersion = "6.0"
@@ -25,7 +25,7 @@ Function FindBuild {
 
     $reasonArg = if ($reason) { "&reasonFilter=$reason" }
     $buildsUrl = `
-        "$baseTfsCollectionUrl/_apis/build/builds?`$top=$top$reasonArg&QueryOrder=startTimeDescending"
+        "$baseCollectionUrl/_apis/build/builds?`$top=$top$reasonArg&QueryOrder=startTimeDescending"
     $builds = Invoke-RestMethod `
         -Uri $buildsUrl `
         -Method GET `

@@ -18,7 +18,7 @@ if (!$repositoryName) {
     $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 }
 
-$browseUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+$browseUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 Start-Process $browseUrl
 
 Start-Process `
@@ -26,8 +26,8 @@ Start-Process `
     "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
     -WindowStyle Minimized
 
-$url = "$baseTfsCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
-$pullRequestOpenUrl = "$baseTfsCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
+$pullRequestOpenUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 $toastButton = New-BTButton -Content 'Open PR' -Arguments $pullRequestOpenUrl
 $activeComments = 0
 $approvalCount = 0
