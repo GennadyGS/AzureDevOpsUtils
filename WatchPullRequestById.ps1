@@ -6,7 +6,6 @@ param (
     $pollTimeoutSec = 5
 )
 
-$pullRequestName = "$pullRequestId to $repositoryName"
 $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 . LoadSettings
@@ -17,6 +16,7 @@ if (!$repositoryName) {
     $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
     $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 }
+$pullRequestName = "$pullRequestId to $repositoryName"
 
 $browseUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 Start-Process $browseUrl
