@@ -48,6 +48,16 @@ Function GetPullRequestBrowseUrl {
     "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
 }
 
+Function BrowsePullRequest {
+    param (
+        [Parameter(Mandatory=$true)] $repositoryName,
+        [Parameter(Mandatory=$true)] $pullRequestId
+    )
+    $browseUrl = `
+        GetPullRequestBrowseUrl -repositoryName $repositoryName -pullRequestId $pullRequestId
+    Start-Process $browseUrl
+}
+
 Function CopyPullRequestInfo {
     param (
         [Parameter(Mandatory=$true)] $pullRequest

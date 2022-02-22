@@ -60,6 +60,8 @@ if ($autoComplete) {
 
 CopyPullRequestInfo $result
 
+BrowsePullRequest -repositoryName $repositoryName -pullRequestId $pullRequestId
+
 & $PSScriptRoot/WatchPullRequestById.ps1 `
     -pullRequestId $pullRequestId `
     -repositoryName $repositoryName `
