@@ -1,5 +1,5 @@
 param (
-    $pullRequest,
+    [Parameter(Mandatory=$true)] $pullRequest,
     $deleteSourceBranch = $true
 )
 

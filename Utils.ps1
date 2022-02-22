@@ -39,3 +39,18 @@ Function FindBuild {
         | %  { $_.id } `
         | Select-Object -First 1
 }
+
+Function CopyPullRequestInfo {
+    param (
+        [Parameter(Mandatory=$true)] $pullRequest
+    )
+
+    $pullRequestName = "$($pullRequest.pullRequestId) to $($pullRequest.repository.name)"
+    $browseUrl = `
+        "$baseCollectionUrl/_git/$($pullRequest.repository.name)/pullrequest/$($pullRequest.pullRequestId)"
+    $encodedTitle = [System.Net.WebUtility]::HtmlEncode($pullRequest.title)
+    $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"
+    $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))
+
+    & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 -Html $html -Text $text
+}

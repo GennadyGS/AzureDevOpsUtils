@@ -58,15 +58,7 @@ if ($autoComplete) {
     & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $result
 }
 
-$browseUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
-Try {
-    $encodedTitle = [System.Net.WebUtility]::HtmlEncode($title)
-    $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"
-    $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))
-    & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 -Html $html -Text $text
-} Catch {
-    Write-Warning $_
-}
+CopyPullRequestInfo $result
 
 & $PSScriptRoot/WatchPullRequestById.ps1 `
     -pullRequestId $pullRequestId `
