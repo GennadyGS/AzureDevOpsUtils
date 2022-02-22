@@ -40,14 +40,23 @@ Function FindBuild {
         | Select-Object -First 1
 }
 
+Function GetPullRequestBrowseUrl {
+    param (
+        [Parameter(Mandatory=$true)] $repositoryName,
+        [Parameter(Mandatory=$true)] $pullRequestId
+    )
+    "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+}
+
 Function CopyPullRequestInfo {
     param (
         [Parameter(Mandatory=$true)] $pullRequest
     )
 
     $pullRequestName = "$($pullRequest.pullRequestId) to $($pullRequest.repository.name)"
-    $browseUrl = `
-        "$baseCollectionUrl/_git/$($pullRequest.repository.name)/pullrequest/$($pullRequest.pullRequestId)"
+    $browseUrl = GetPullRequestBrowseUrl `
+        -repositoryName $pullRequest.repository.name `
+        -pullRequestId $pullRequest.pullRequestId
     $encodedTitle = [System.Net.WebUtility]::HtmlEncode($pullRequest.title)
     $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"
     $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))

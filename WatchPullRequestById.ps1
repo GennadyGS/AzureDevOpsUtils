@@ -18,7 +18,7 @@ if (!$repositoryName) {
 }
 $pullRequestName = "$pullRequestId to $repositoryName"
 
-$browseUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+$browseUrl = GetPullRequestBrowseUrl -repositoryName $repositoryName -pullRequestId $pullRequestId
 Start-Process $browseUrl
 
 Start-Process `
