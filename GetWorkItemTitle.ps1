@@ -8,6 +8,9 @@ $ErrorActionPreference = "Stop"
 
 $url = "$baseInstanceUrl/_apis/wit/workItems/$id"
 
-$workItem = Invoke-RestMethod -Uri $url -Method 'Get' -Headers @{Authorization = $authorization }
+$workItem = Invoke-RestMethod `
+    -Uri $url `
+    -Method GET `
+    -Headers @{ Authorization = $authorization }
 
 $workItem.fields."System.Title"
