@@ -19,11 +19,11 @@ if (!$repositoryName) {
 
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 
-$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests?targetRefName=refs/heads/$targetBranchName&status=$status"
+$url = "$baseCollectionUrl/_apis/git/repositorie/pullRequests/s/$repositoryName/pullRequests" `
+    + "?targetRefName=refs/heads/$targetBranchName&status=$status"
+$pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 
-$resp = Invoke-RestMethod -Uri $url -Headers @{Authorization = $authorization}
-
-$pullRequestId = $resp.value `
+$pullRequestId = $pullRequests.value `
     | ? {$_.sourceRefName -Match "refs/heads/$sourceBranchName" } `
     | ? {$_.targetRefName -Match "refs/heads/$targetBranchName" } `
     | % {$_.pullRequestId} `

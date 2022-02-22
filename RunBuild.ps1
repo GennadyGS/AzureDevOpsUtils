@@ -17,7 +17,8 @@ if (!$repositoryId) {
     throw "Repository $repositoryName is not found"
 }
 
-$buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions?name=$definition&repositoryId=$repositoryId&repositoryType=TfsGit"
+$buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions" `
+    + "?name=$definition&repositoryId=$repositoryId&repositoryType=TfsGit"
 
 $buildDefinitions = Invoke-RestMethod -Uri $buildDefinitionsUrl `
     -Method 'Get' -Headers @{Authorization = $authorization}

@@ -16,16 +16,19 @@ if (!$repositoryName) {
     $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
     $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 }
-$pullRequestName = "$pullRequestId to $repositoryName"
+$pullRequestName = GetPullRequestName $repositoryName $pullRequestId
+
+$pullRequest = GetPullRequest $repositoryName $pullRequestId
+CopyPullRequestInfo $pullRequest
 
 Start-Process `
     -LoadUserProfile "PowerShell" `
     "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
     -WindowStyle Minimized
 
-$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
-$pullRequestOpenUrl = "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
-$toastButton = New-BTButton -Content 'Open PR' -Arguments $pullRequestOpenUrl
+$browseUrl = GetPullRequestBrowseUrl $repositoryName $pullRequestId
+$toastButton = New-BTButton -Content 'Open PR' -Arguments $browseUrl
+
 $activeComments = 0
 $approvalCount = 0
 $rejectCount = 0
@@ -33,21 +36,18 @@ $failures = 0
 $host.UI.RawUI.FlushInputBuffer()
 Do {
     Try {
-        $pullRequest = Invoke-RestMethod `
-            -Uri $url `
-            -Method GET `
-            -Body $body `
-            -Headers @{Authorization = $authorization }
+        $pullRequest = GetPullRequest $repositoryName $pullRequestId
+        $url = GetPullRequestUrl $repositoryName $pullRequestId
         $pullRequestThreads = Invoke-RestMethod `
             -Uri $url/threads `
             -Method GET `
             -Body $body `
-            -Headers @{Authorization = $authorization }
+            -Headers @{ Authorization = $authorization }
         $pullRequestReviewers = Invoke-RestMethod `
             -Uri $url/reviewers `
             -Method GET `
             -Body $body `
-            -Headers @{Authorization = $authorization }
+            -Headers @{ Authorization = $authorization }
         $failures = 0
     } Catch {
         If (++$failures -le $maxWatchFailures) {
@@ -94,9 +94,7 @@ Do {
         switch ($key.Character)
         {
             'a' { & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest }
-            'b' {
-                BrowsePullRequest -repositoryName $repositoryName -pullRequestId $pullRequestId
-            }
+            'b' { BrowsePullRequest $repositoryName $pullRequestId }
         }
         $host.UI.RawUI.FlushInputBuffer()
     }

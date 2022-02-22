@@ -40,21 +40,49 @@ Function FindBuild {
         | Select-Object -First 1
 }
 
+Function GetPullRequestUrl {
+    param (
+        [Parameter(Mandatory=$true)] $repositoryName,
+        [Parameter(Mandatory=$true)] $id
+    )
+    "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$id"
+}
+
+Function GetPullRequest {
+    param (
+        [Parameter(Mandatory=$true)] $repositoryName,
+        [Parameter(Mandatory=$true)] $id
+    )
+    $url = GetPullRequestUrl -repositoryName $repositoryName -id $id
+    Invoke-RestMethod `
+        -Uri $url `
+        -Method GET `
+        -Body $body `
+        -Headers @{ Authorization = $authorization }
+}
+
+Function GetPullRequestName {
+    param (
+        [Parameter(Mandatory=$true)] $repositoryName,
+        [Parameter(Mandatory=$true)] $id
+    )
+    "$id to $repositoryName"
+}
+
 Function GetPullRequestBrowseUrl {
     param (
         [Parameter(Mandatory=$true)] $repositoryName,
-        [Parameter(Mandatory=$true)] $pullRequestId
+        [Parameter(Mandatory=$true)] $id
     )
-    "$baseCollectionUrl/_git/$repositoryName/pullrequest/$pullRequestId"
+    "$baseCollectionUrl/_git/$repositoryName/pullrequest/$id"
 }
 
 Function BrowsePullRequest {
     param (
         [Parameter(Mandatory=$true)] $repositoryName,
-        [Parameter(Mandatory=$true)] $pullRequestId
+        [Parameter(Mandatory=$true)] $id
     )
-    $browseUrl = `
-        GetPullRequestBrowseUrl -repositoryName $repositoryName -pullRequestId $pullRequestId
+    $browseUrl = GetPullRequestBrowseUrl $repositoryName $id
     Start-Process $browseUrl
 }
 
@@ -63,10 +91,8 @@ Function CopyPullRequestInfo {
         [Parameter(Mandatory=$true)] $pullRequest
     )
 
-    $pullRequestName = "$($pullRequest.pullRequestId) to $($pullRequest.repository.name)"
-    $browseUrl = GetPullRequestBrowseUrl `
-        -repositoryName $pullRequest.repository.name `
-        -pullRequestId $pullRequest.pullRequestId
+    $pullRequestName = GetPullRequestName $pullRequest.repository.name $pullRequest.pullRequestId
+    $browseUrl = GetPullRequestBrowseUrl $pullRequest.repository.name $pullRequest.pullRequestId
     $encodedTitle = [System.Net.WebUtility]::HtmlEncode($pullRequest.title)
     $html = "<span><a href=""$browseUrl"">PR $pullRequestName</a>: $encodedTitle</span>"
     $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))

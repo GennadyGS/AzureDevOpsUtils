@@ -15,20 +15,13 @@ if (!$repositoryName) {
     $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
     $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 }
-
-$pullRequestUrl = `
-    "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$pullRequestId"
-$pullRequestName = "$pullRequestId to $repositoryName"
+$pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
 Function WaitForBuild {
     Do {
         $failures = 0
         Try {
-            $pullRequest = Invoke-RestMethod `
-                -Uri $pullRequestUrl `
-                -Method GET `
-                -Body $body `
-                -Headers @{ Authorization = $authorization }
+            $pullRequest = GetPullRequest $repositoryName $pullRequestId
             if ($pullRequest.status -ne "active") {
                 Write-Host "PR $pullRequestName is finished with result $($pullRequest.status)"
                 Return

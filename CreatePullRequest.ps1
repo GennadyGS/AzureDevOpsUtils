@@ -51,7 +51,7 @@ $result = Invoke-RestMethod `
     -Body ($body | ConvertTo-Json) `
     -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 $pullRequestId = $result.pullRequestId
-$pullRequestName = "$pullRequestId to $repositoryName"
+$pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 Write-Host "PR $pullRequestName created: '$title'"
 
 if ($autoComplete) {
@@ -59,8 +59,7 @@ if ($autoComplete) {
 }
 
 CopyPullRequestInfo $result
-
-BrowsePullRequest -repositoryName $repositoryName -pullRequestId $pullRequestId
+BrowsePullRequest $repositoryName $pullRequestId
 
 & $PSScriptRoot/WatchPullRequestById.ps1 `
     -pullRequestId $pullRequestId `
