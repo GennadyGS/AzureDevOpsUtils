@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 . LoadSettings
 
-$url = "$baseTfsInstanceUrl/_apis/wit/workItems/$id"
+$url = "$baseInstanceUrl/_apis/wit/workItems/$id"
 
 $workItem = Invoke-RestMethod -Uri $url -Method 'Get' -Headers @{Authorization = $authorization }
 

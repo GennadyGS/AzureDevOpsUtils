@@ -3,7 +3,7 @@ Function LoadSettings {
     If (Test-Path "$PSScriptRoot/Settings.private.ps1") {
         . $PSScriptRoot/Settings.private.ps1
     }
-    $baseCollectionUrl = "$baseTfsInstanceUrl/$collection"
+    $baseCollectionUrl = "$baseInstanceUrl/$collection"
     $encodedPat = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$pat"))
     $authorization = "Basic $encodedPat"
     $apiVersion = "6.0"

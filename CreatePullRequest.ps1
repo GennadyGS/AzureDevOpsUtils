@@ -15,7 +15,7 @@ $ErrorActionPreference = "Stop"
 Function GetWorkItemRefs {
     param ([int[]]$workItems)
     return $workItems `
-        | % { @{id = $_; url = "$baseTfsInstanceUrl/_apis/wit/workItems/$_"} }
+        | % { @{id = $_; url = "$baseInstanceUrl/_apis/wit/workItems/$_"} }
 }
 
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
