@@ -81,7 +81,12 @@ Do {
     }
     $rejectCount = $newRejectCount
 
-    Write-Host "PR $pullRequestName status: $($pullRequest.status)"
+    $message = "PR $pullRequestName status: $($pullRequest.status)"
+    if ($activeComments -gt 0) { $message += "; $activeComments active comments" }
+    if ($approvalCount -gt 0) { $message += "; $approvalCount approvals" }
+    if ($rejectCount -gt 0) { $message += "; $rejectCount rejections" }
+    Write-Host $message
+
     if ($pullRequest.status -eq "active") {
         Start-Sleep -s $pollTimeoutSec
     }
