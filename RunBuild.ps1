@@ -8,7 +8,7 @@ param (
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 . LoadSettings
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
 
 $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
 if (!$repositoryId) {

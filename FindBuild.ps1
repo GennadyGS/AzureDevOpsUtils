@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
-if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
+$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 
 FindBuild -repositoryName $repositoryName -sourceBranchName $sourceBranchName

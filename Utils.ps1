@@ -10,6 +10,36 @@ Function LoadSettings {
     $apiVersionParam = "?api-version=$apiVersion"
 }
 
+Function EstablishRepositoryName {
+    param (
+        $repositoryName,
+        $remoteName
+    )
+
+    if (!$repositoryName) {
+        GetCurrentRepositoryName $remoteName
+    } else {
+        $repositoryName
+    }
+}
+
+Function EstablishSourceBranchName {
+    param (
+        $sourceBranchName,
+        $repositoryName,
+        $remoteName
+    )
+
+    if (!$sourceBranchName) {
+        if ($repositoryName -ne (GetCurrentRepositoryName $remoteName)) {
+            throw "SourceBranchName must be specified in case repositoryName is not current one"
+        }
+        GetCurrentBranch
+    } else {
+        $sourceBranchName
+    }
+}
+
 Function FindBuild {
     param (
         [Parameter(Mandatory=$true)] $repositoryName,

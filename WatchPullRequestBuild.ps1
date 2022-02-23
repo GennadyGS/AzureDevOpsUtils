@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
 
 $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
@@ -49,7 +49,7 @@ Function WaitForBuild {
     $buildId
 }
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
 
 Do {
     $lastBuidId = WaitForBuild

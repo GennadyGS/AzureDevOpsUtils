@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot\gitUtils\gitUtils.ps1
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
 
 $url = `
     "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests" `

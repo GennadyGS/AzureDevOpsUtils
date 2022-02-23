@@ -19,8 +19,8 @@ Function GetWorkItemRefs {
         | % { @{id = $_; url = "$baseInstanceUrl/_apis/wit/workItems/$_" } }
 }
 
-if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
-if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
+$repositoryName = EstablishRepositoryName $repositoryName $remoteName
+$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 
 if ($repositoryName -eq (GetCurrentRepositoryName $remoteName)) {
     RunGit "push"
