@@ -1,7 +1,7 @@
 param (
     [Parameter(Mandatory=$true)] $pullRequestId,
     $repositoryName,
-    [switch] $watchCiBuild,
+    [switch] $noWatchCiBuild,
     $remoteName = "origin",
     $pollTimeoutSec = 5
 )
@@ -115,7 +115,7 @@ New-BurntToastNotification `
     -Button $toastButton `
     -AppLogo $imageUri
 
-if ($watchCiBuild -and ($pullRequest.status -eq "completed")) {
+if (!$noWatchCiBuild -and ($pullRequest.status -eq "completed")) {
     Write-Host "PR is completed; watching CI build..."
     Start-Sleep -Seconds 10
     $targetBranchName = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value

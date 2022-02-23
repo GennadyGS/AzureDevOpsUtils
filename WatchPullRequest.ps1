@@ -1,10 +1,10 @@
 param (
-    $repositoryName,
-    $sourceBranchName,
     $targetBranchName = "master",
+    $sourceBranchName,
+    $repositoryName,
     $remoteName = "origin",
     $status = "all",
-    [switch] $watchCiBuild = $true
+    [switch] $noWatchCiBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,14 +19,14 @@ if (!$repositoryName) {
 
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 
-$url = "$baseCollectionUrl/_apis/git/repositorie/pullRequests/s/$repositoryName/pullRequests" `
+$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests" `
     + "?targetRefName=refs/heads/$targetBranchName&status=$status"
 $pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 
 $pullRequestId = $pullRequests.value `
-    | ? {$_.sourceRefName -Match "refs/heads/$sourceBranchName" } `
-    | ? {$_.targetRefName -Match "refs/heads/$targetBranchName" } `
-    | % {$_.pullRequestId} `
+    | ? { $_.sourceRefName -Match "refs/heads/$sourceBranchName" } `
+    | ? { $_.targetRefName -Match "refs/heads/$targetBranchName" } `
+    | % { $_.pullRequestId} `
     | Select-Object -first 1
 
 if (!$pullRequestId) {
@@ -37,4 +37,4 @@ if (!$pullRequestId) {
     -pullRequestId $pullRequestId `
     -repositoryName $repositoryName `
     -remoteName $remoteName `
-    -watchCiBuild:$watchCiBuild
+    -noWatchCiBuild:$noWatchCiBuild

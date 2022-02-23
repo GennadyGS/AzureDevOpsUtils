@@ -2,9 +2,9 @@ param (
     $targetBranchName = "master",
     $sourceBranchName = "",
     $remoteName = "origin",
-    $watchCiBuild = $true,
-    [switch]$draft,
-    [switch]$autoComplete
+    [switch] $draft,
+    [switch] $autoComplete,
+    [switch] $noWatchCiBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,4 +65,4 @@ BrowsePullRequest $repositoryName $pullRequestId
     -pullRequestId $pullRequestId `
     -repositoryName $repositoryName `
     -remoteName $remoteName `
-    -watchCiBuild:$watchCiBuild
+    -noWatchCiBuild:$noWatchCiBuild
