@@ -4,8 +4,7 @@ param (
     $repositoryName,
     $remoteName = "origin",
     [switch] $draft,
-    [switch] $autoComplete,
-    [switch] $noWatchCiBuild
+    [switch] $autoComplete
 )
 
 $ErrorActionPreference = "Stop"
@@ -66,5 +65,4 @@ BrowsePullRequest $repositoryName $pullRequestId
 & $PSScriptRoot/WatchPullRequestById.ps1 `
     -pullRequestId $pullRequestId `
     -repositoryName $repositoryName `
-    -remoteName $remoteName `
-    -noWatchCiBuild:$noWatchCiBuild
+    -remoteName $remoteName

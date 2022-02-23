@@ -3,8 +3,7 @@ param (
     $sourceBranchName,
     $repositoryName,
     $remoteName = "origin",
-    $status = "all",
-    [switch] $noWatchCiBuild
+    $status = "all"
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,5 +31,4 @@ if (!$pullRequestId) {
 & $PSScriptRoot/WatchPullRequestById.ps1 `
     -pullRequestId $pullRequestId `
     -repositoryName $repositoryName `
-    -remoteName $remoteName `
-    -noWatchCiBuild:$noWatchCiBuild
+    -remoteName $remoteName
