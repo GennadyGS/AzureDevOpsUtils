@@ -14,7 +14,7 @@ $ErrorActionPreference = "Stop"
 $repositoryName = EstablishRepositoryName $repositoryName $remoteName
 $sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 
-$url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests" `
+$url = $(GetPullRequestsUrl $repositoryName) `
     + "?targetRefName=refs/heads/$targetBranchName&status=$status"
 $pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 

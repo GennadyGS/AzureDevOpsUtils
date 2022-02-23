@@ -31,7 +31,7 @@ Function EstablishSourceBranchName {
     )
 
     if (!$sourceBranchName) {
-        if ($repositoryName -ne (GetCurrentRepositoryName $remoteName)) {
+        if (!(IsCurrentRepository $repositoryName $remoteName)) {
             throw "SourceBranchName must be specified in case repositoryName is not current one"
         }
         GetCurrentBranch
@@ -70,12 +70,17 @@ Function FindBuild {
         | Select-Object -First 1
 }
 
+Function GetPullRequestsUrl {
+    param ([Parameter(Mandatory=$true)] $repositoryName)
+    "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests"
+}
+
 Function GetPullRequestUrl {
     param (
         [Parameter(Mandatory=$true)] $repositoryName,
         [Parameter(Mandatory=$true)] $id
     )
-    "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests/$id"
+    "$(GetPullRequestsUrl $repositoryName)/$id"
 }
 
 Function GetPullRequest {
