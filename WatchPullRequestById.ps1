@@ -18,9 +18,6 @@ if (!$repositoryName) {
 }
 $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
-$pullRequest = GetPullRequest $repositoryName $pullRequestId
-CopyPullRequestInfo $pullRequest
-
 Start-Process `
     -LoadUserProfile "PowerShell" `
     "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
@@ -93,8 +90,9 @@ Do {
         $key = $host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp, IncludeKeyDown")
         switch ($key.Character)
         {
-            'a' { & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $pullRequest }
+            'a' { SetPullRequestAutoComplete $pullRequest }
             'b' { BrowsePullRequest $repositoryName $pullRequestId }
+            'i' { CopyPullRequestInfo $pullRequest }
         }
         $host.UI.RawUI.FlushInputBuffer()
     }

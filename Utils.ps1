@@ -98,4 +98,29 @@ Function CopyPullRequestInfo {
     $text = [System.Net.WebUtility]::HtmlDecode(($html -replace "<(.|\n)*?>", ""))
 
     & $PSScriptRoot/PsClipboardUtils/CopyHtmlToClipboard.ps1 -Html $html -Text $text
+    Write-Host "PR $pullRequestName info is copied to clipboard"
+}
+
+Function SetPullRequestAutoComplete {
+    param (
+        [Parameter(Mandatory=$true)] $pullRequest,
+        $deleteSourceBranch = $true
+    )
+
+    $body = @{
+        autoCompleteSetBy = @{ id = $pullRequest.createdBy.id }
+        completionOptions = @{
+            deleteSourceBranch = $deleteSourceBranch
+            mergeCommitMessage = $pullRequest.title
+        }
+    }
+    Invoke-RestMethod `
+        -Uri "$($pullRequest.url)$apiVersionParam" `
+        -Method PATCH `
+        -Body ($body | ConvertTo-Json) `
+        -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" } `
+    | Out-Null
+
+    $pullRequestName = GetPullRequestName $pullRequest.pullRequestId $pullRequest.repository.name
+    Write-Host "PR $pullRequestName is set to auto complete"
 }

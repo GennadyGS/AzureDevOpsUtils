@@ -55,7 +55,7 @@ $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 Write-Host "PR $pullRequestName created: '$title'"
 
 if ($autoComplete) {
-    & $PSScriptRoot/PullRequestSetAutoComplete.ps1 $result
+    SetPullRequestAutoComplete $result
 }
 
 CopyPullRequestInfo $result
