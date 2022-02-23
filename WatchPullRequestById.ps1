@@ -12,10 +12,8 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 Import-Module $PSScriptRoot/PowershellModules/BurntToast/BurntToast/BurntToast.psm1
 
-if (!$repositoryName) {
-    $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
-    $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
-}
+if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+
 $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
 Start-Process `

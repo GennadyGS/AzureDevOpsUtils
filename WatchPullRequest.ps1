@@ -12,11 +12,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot\gitUtils\gitUtils.ps1
 
-if (!$repositoryName) {
-    $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
-    $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
-}
-
+if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 
 $url = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests" `

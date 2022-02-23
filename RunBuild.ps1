@@ -8,10 +8,8 @@ param (
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 . LoadSettings
 
-if (!$repositoryName) {
-    $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
-    $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
-}
+if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+
 $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
 if (!$repositoryId) {
     throw "Repository $repositoryName is not found"

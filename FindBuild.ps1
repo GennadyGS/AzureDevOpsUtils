@@ -1,6 +1,6 @@
 param (
-    $sourceBranchName = "",
-    $repositoryName = "",
+    $sourceBranchName,
+    $repositoryName,
     $remoteName = "origin",
     $top = 10
 )
@@ -10,13 +10,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-if (!$repositoryName) {
-    $gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
-    $repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
-}
-
-if (!$sourceBranchName) {
-    if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
-}
+if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
+if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
 
 FindBuild -repositoryName $repositoryName -sourceBranchName $sourceBranchName

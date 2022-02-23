@@ -1,6 +1,7 @@
 param (
     $targetBranchName = "master",
-    $sourceBranchName = "",
+    $sourceBranchName,
+    $repositoryName,
     $remoteName = "origin",
     [switch] $draft,
     [switch] $autoComplete,
@@ -15,14 +16,15 @@ $ErrorActionPreference = "Stop"
 Function GetWorkItemRefs {
     param ([int[]]$workItems)
     return $workItems `
-        | % { @{id = $_; url = "$baseInstanceUrl/_apis/wit/workItems/$_"} }
+        | % { @{id = $_; url = "$baseInstanceUrl/_apis/wit/workItems/$_" } }
 }
 
+if (!$repositoryName) { $repositoryName = GetCurrentRepositoryName $remoteName }
 if (!$sourceBranchName) { $sourceBranchName = GetCurrentBranch }
-$gitRemoteUrl = GetRemoteUrl -remoteName $remoteName
-$repositoryName = [regex]::match($gitRemoteUrl, ".*/(.*)$").Groups[1].Value
 
-RunGit "push"
+if ($repositoryName -eq (GetCurrentRepositoryName $remoteName)) {
+    RunGit "push"
+}
 
 $urlBase = "$baseCollectionUrl/_apis/git/repositories/$repositoryName/pullRequests"
 
