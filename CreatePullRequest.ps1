@@ -77,6 +77,6 @@ CopyPullRequestInfo $result
 BrowsePullRequest $repositoryName $pullRequestId
 
 & $PSScriptRoot/WatchPullRequestById.ps1 `
-    -pullRequestId $pullRequestId `
-    -repositoryName $repositoryName `
-    -remoteName $remoteName
+    -pullRequestId:$pullRequestId `
+    -repositoryName:$repositoryName `
+    -remoteName:$remoteName

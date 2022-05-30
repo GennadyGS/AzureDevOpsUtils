@@ -2,6 +2,10 @@ param (
     $sourceBranchName,
     $repositoryName,
     $remoteName = "origin",
+    $reason,
+    $parameter,
+    $definitionNamePattern,
+    $fromId,
     $top = 10
 )
 
@@ -13,4 +17,11 @@ $ErrorActionPreference = "Stop"
 $repositoryName = EstablishRepositoryName $repositoryName $remoteName
 $sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 
-FindBuild -repositoryName $repositoryName -sourceBranchName $sourceBranchName
+FindBuild `
+    -repositoryName:$repositoryName `
+    -sourceBranchName:$sourceBranchName `
+    -reason:$reason `
+    -parameter:$parameter `
+    -definitionNamePattern:$definitionNamePattern `
+    -fromId:$fromId `
+    -top:$top

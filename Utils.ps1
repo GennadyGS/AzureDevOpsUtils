@@ -46,6 +46,7 @@ Function FindBuild {
         $sourceBranchName,
         $reason,
         $parameter,
+        $definitionNamePattern,
         $fromId,
         $top = 10
     )
@@ -66,6 +67,7 @@ Function FindBuild {
         | ?  { !($parameter) -or ($_.parameters -and $_.parameters.Contains($parameter)) } `
         | ?  { !($sourceBranchName) -or ($_.sourceBranch -eq "refs/heads/$sourceBranchName") } `
         | ?  { !($fromId) -or ($_.id -gt $fromId) } `
+        | ?  { !($definitionNamePattern) -or ($_.definition.name -match $definitionNamePattern) } `
         | %  { $_.id } `
         | Select-Object -First 1
 }

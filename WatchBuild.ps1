@@ -1,6 +1,7 @@
 param (
     $sourceBranchName,
     $repositoryName,
+    $definitionNamePattern,
     $remoteName = "origin",
     $top = 10
 )
@@ -14,9 +15,10 @@ $repositoryName = EstablishRepositoryName $repositoryName $remoteName
 $sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 
 $buildId = FindBuild `
-    -sourceBranch $sourceBranchName `
-    -repositoryName $repositoryName `
-    -top $top
+    -sourceBranch:$sourceBranchName `
+    -repositoryName:$repositoryName `
+    -definitionNamePattern:$definitionNamePattern `
+    -top:$top
 
 if (!$buildId) {
     Write-Warning "Build is not found for source branch $sourceBranchName and repository $repositoryName"
