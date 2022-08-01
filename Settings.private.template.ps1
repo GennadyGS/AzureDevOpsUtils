@@ -1,4 +1,5 @@
 $baseInstanceUrl = ""
 $collection = ""
 $pat = ""
-$teamName = ""
+$ciBuildNamePattern = "^[a-zA-Z\.]+_CI$"
+
