@@ -22,7 +22,6 @@ $ErrorActionPreference = "Stop"
 
 & $PSScriptRoot/CreatePullRequest.ps1 `
     -targetBranchName $toTargetBranchName `
-    -sourceBranchName $sourceBranchName `
     -repositoryName $repositoryName `
     -remoteName $remoteName `
     -title $title `
