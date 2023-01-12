@@ -16,8 +16,8 @@ $repositoryName = EstablishRepositoryName $repositoryName $remoteName
 $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
 Start-Process `
-    -LoadUserProfile "PowerShell" `
-    "-NoExit $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
+    "$hostShell" `
+    "$hostShellArgs $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
     -WindowStyle Minimized
 
 $browseUrl = GetPullRequestBrowseUrl $repositoryName $pullRequestId
