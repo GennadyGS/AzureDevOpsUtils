@@ -8,15 +8,13 @@ param (
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 . LoadSettings
 
-$repositoryName = EstablishRepositoryName $repositoryName $remoteName
-
-$repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
-if (!$repositoryId) {
-    throw "Repository $repositoryName is not found"
+if ($repositoryName = TryEstablishRepositoryName $repositoryName $remoteName) {
+    $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
+    $repositoryIdParam = $repositoryId ? "&repositoryId=$repositoryId&repositoryType=TfsGit" : ""
 }
 
 $buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions" `
-    + "?name=$definition&repositoryId=$repositoryId&repositoryType=TfsGit"
+    + "?name=$definition" + $repositoryIdParam
 
 $buildDefinitions = Invoke-RestMethod -Uri $buildDefinitionsUrl `
     -Method 'Get' -Headers @{Authorization = $authorization}

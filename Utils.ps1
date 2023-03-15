@@ -23,6 +23,19 @@ Function EstablishRepositoryName {
     }
 }
 
+
+Function TryEstablishRepositoryName {
+    param (
+        $repositoryName,
+        $remoteName
+    )
+
+    if (!(IsInsideWorkTree)) {
+        return $null
+    }
+    EstablishRepositoryName $repositoryName $remoteName
+}
+
 Function EstablishSourceBranchName {
     param (
         $sourceBranchName,
