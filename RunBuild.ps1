@@ -8,10 +8,9 @@ param (
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 . LoadSettings
 
-if ($repositoryName = TryEstablishRepositoryName $repositoryName $remoteName) {
-    $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
-    $repositoryIdParam = $repositoryId ? "&repositoryId=$repositoryId&repositoryType=TfsGit" : ""
-}
+$repositoryName ??= GetCurrentRepositoryName $remoteName
+$repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
+$repositoryIdParam = $repositoryId ? "&repositoryId=$repositoryId&repositoryType=TfsGit" : ""
 
 $buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions" `
     + "?name=$definition" + $repositoryIdParam

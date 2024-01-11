@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 Import-Module $PSScriptRoot/PowershellModules/BurntToast/BurntToast/BurntToast.psm1
 
-$repositoryName = EstablishRepositoryName $repositoryName $remoteName
+$repositoryName ??= GetCurrentRepositoryName $remoteName
 
 $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 

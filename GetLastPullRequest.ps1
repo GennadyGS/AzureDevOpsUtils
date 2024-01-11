@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 . LoadSettings
 . $PSScriptRoot\gitUtils\gitUtils.ps1
 
-$repositoryName = EstablishRepositoryName $repositoryName $remoteName
+$repositoryName ??= GetCurrentRepositoryName $remoteName
 
 $url = (GetPullRequestsUrl $repositoryName) `
     + "?targetRefName=refs/heads/$targetBranchName&status=$status"

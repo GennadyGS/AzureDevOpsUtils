@@ -10,32 +10,6 @@ Function LoadSettings {
     $apiVersionParam = "?api-version=$apiVersion"
 }
 
-Function EstablishRepositoryName {
-    param (
-        $repositoryName,
-        $remoteName
-    )
-
-    if (!$repositoryName) {
-        GetCurrentRepositoryName $remoteName
-    } else {
-        $repositoryName
-    }
-}
-
-
-Function TryEstablishRepositoryName {
-    param (
-        $repositoryName,
-        $remoteName
-    )
-
-    if (!(IsInsideWorkTree)) {
-        return $null
-    }
-    EstablishRepositoryName $repositoryName $remoteName
-}
-
 Function EstablishSourceBranchName {
     param (
         $sourceBranchName,

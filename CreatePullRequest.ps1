@@ -41,7 +41,7 @@ Function GetWorkItemRefs {
         | % { @{id = $_; url = "$baseInstanceUrl/_apis/wit/workItems/$_" } }
 }
 
-$repositoryName = EstablishRepositoryName $repositoryName $remoteName
+$repositoryName ??= GetCurrentRepositoryName $remoteName
 $sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
 $title = EstablishTitle
 $workItems = EstablishWorkItems
