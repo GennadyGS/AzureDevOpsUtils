@@ -3,7 +3,7 @@ param (
     $repositoryName,
     $definitionNamePattern,
     $remoteName = "origin",
-    $top = 10
+    $top = 50
 )
 
 $ErrorActionPreference = "Stop"

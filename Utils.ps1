@@ -35,7 +35,7 @@ Function FindBuild {
         $parameter,
         $definitionNamePattern,
         $fromId,
-        $top = 10
+        $top = 50
     )
 
     . LoadSettings

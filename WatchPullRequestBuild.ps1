@@ -2,7 +2,7 @@ param (
     [Parameter(Mandatory=$true)] $pullRequestId,
     $repositoryName,
     $remoteName = "origin",
-    $top = 10,
+    $top = 50,
     $pollTimeoutSec = 10
 )
 
