@@ -148,3 +148,16 @@ Function SetPullRequestAutoComplete {
     $pullRequestName = GetPullRequestName $pullRequest.pullRequestId $pullRequest.repository.name
     Write-Host "PR $pullRequestName is set to auto complete"
 }
+
+function WaitForKey($timeoutSeconds) {
+    Set-Variable intervalMs -Option Constant -Value 100
+    $loops = $timeoutSeconds * 1000 / $intervalMs
+    for ($i = 0; $i -le $loops; $i++) {
+        if ($host.UI.RawUI.KeyAvailable) { break; }
+        Start-Sleep -Milliseconds $intervalMs
+    }
+
+    return $host.UI.RawUI.KeyAvailable `
+        ? $host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp").Character
+        : $null;
+}

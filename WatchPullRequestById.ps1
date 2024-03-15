@@ -1,5 +1,5 @@
 param (
-    [Parameter(Mandatory=$true)] $pullRequestId,
+    [Parameter(Mandatory = $true)] $pullRequestId,
     $repositoryName,
     $remoteName = "origin",
     $pollTimeoutSec = 5
@@ -43,15 +43,17 @@ Do {
             -Body $body `
             -Headers @{ Authorization = $authorization }
         $failures = 0
-    } Catch {
+    }
+    Catch {
         If (++$failures -le $maxWatchFailures) {
             Write-Warning $_
-        } Else {
+        }
+        Else {
             Throw;
         }
     }
     $newActiveComments =
-        @($pullRequestThreads.value | ?{ !$_.isDeleted -and $_.status -eq "active" }).count
+    @($pullRequestThreads.value | ? { !$_.isDeleted -and $_.status -eq "active" }).count
     If ($newActiveComments -gt $activeComments) {
         New-BurntToastNotification `
             -Text "$($newActiveComments - $activeComments) new comments on PR $pullRequestName" `
@@ -60,7 +62,7 @@ Do {
     }
     $activeComments = $newActiveComments
 
-    $newApprovalCount = @($pullRequestReviewers.value | ?{$_.vote -gt 0}).count
+    $newApprovalCount = @($pullRequestReviewers.value | ? { $_.vote -gt 0 }).count
     If ($newApprovalCount -gt $approvalCount) {
         New-BurntToastNotification `
             -Text "$($newApprovalCount - $approvalCount) new approvals on PR $pullRequestName" `
@@ -69,7 +71,7 @@ Do {
     }
     $approvalCount = $newApprovalCount
 
-    $newRejectCount = @($pullRequestReviewers.value | ?{$_.vote -lt 0}).count
+    $newRejectCount = @($pullRequestReviewers.value | ? { $_.vote -lt 0 }).count
     If ($newRejectCount -gt $rejectCount) {
         New-BurntToastNotification `
             -Text "$($newRejectCount - $rejectCount) new rejects on PR $pullRequestName" `
@@ -84,27 +86,25 @@ Do {
     if ($rejectCount -gt 0) { $message += "; $rejectCount rejections" }
     Write-Host $message
 
-    if ($pullRequest.status -eq "active") {
-        Start-Sleep -s $pollTimeoutSec
+    if ($pullRequest.status -ne "active") {
+        break;
     }
 
-    if ($host.UI.RawUI.KeyAvailable) {
-        $key = $host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp, IncludeKeyDown")
-        switch ($key.Character)
-        {
-            'a' { SetPullRequestAutoComplete $pullRequest }
-            'b' { BrowsePullRequest $repositoryName $pullRequestId }
-            'i' { CopyPullRequestInfo $pullRequest }
-        }
-        $host.UI.RawUI.FlushInputBuffer()
+    $key = WaitForKey $pollTimeoutSec
+    switch ($key) {
+        'a' { SetPullRequestAutoComplete $pullRequest }
+        'b' { BrowsePullRequest $repositoryName $pullRequestId }
+        'i' { CopyPullRequestInfo $pullRequest }
     }
+    $host.ui.RawUI.FlushInputBuffer()
 }
 Until($pullRequest.status -ne "active")
 
 Write-Host "PR $pullRequestName is finished with result $($pullRequest.status)"
 If ($pullRequest.status -eq "abandoned") {
     $imageUri = "$PSScriptRoot/Images/StatusCriticalError_256x.png"
-} ElseIf ($pullRequest.status -eq "completed") {
+}
+ElseIf ($pullRequest.status -eq "completed") {
     $imageUri = "$PSScriptRoot/Images/StatusOK_256x.png"
 }
 New-BurntToastNotification `
