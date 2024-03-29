@@ -1,7 +1,8 @@
 param (
     [Parameter(Mandatory=$true)] $definition,
     $repositoryName,
-    $remoteName = "origin"
+    $remoteName = "origin",
+    $sourceBranch
 )
 
 . $PSScriptRoot/Utils.ps1
@@ -11,6 +12,8 @@ param (
 $repositoryName ??= GetCurrentRepositoryName $remoteName
 $repositoryId = & $PSScriptRoot\FindRepository.ps1 $repositoryName
 $repositoryIdParam = $repositoryId ? "&repositoryId=$repositoryId&repositoryType=TfsGit" : ""
+$sourceBranch ??=
+    ($repositoryName -eq (GetCurrentRepositoryName $remoteName)) ? (GetCurrentBranch) : $null
 
 $buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions" `
     + "?name=$definition" + $repositoryIdParam
@@ -25,8 +28,19 @@ if ($buildDefinitions.count -eq 0) {
 
 $definitionId = $buildDefinitions.value[0].id
 
-$body = @{definition = @{id=$definitionId}}
+$body = @{
+    definition = @{ id = $definitionId }
+}
+
+If ($sourceBranch) {
+    $body.sourceBranch = $sourceBranch
+}
+
 $buildsUrl = "$baseCollectionUrl/_apis/build/builds?api-version=2.0"
-$build = Invoke-RestMethod -Uri $buildsUrl -Method 'Post' -body ($body | ConvertTo-Json) -Headers @{Authorization = $authorization; "Content-Type" = "application/json"}
+$build = Invoke-RestMethod `
+    -Uri $buildsUrl `
+    -Method 'Post' `
+    -body ($body | ConvertTo-Json) `
+    -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 
 WatchBuildById.ps1 $build.id

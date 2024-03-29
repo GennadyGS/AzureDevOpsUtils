@@ -28,6 +28,7 @@ Write-Host "Definition name: $($build.definition.name)"
 Write-Host "Build number: $($build.buildNumber)"
 Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
+Write-Host "Branch: $($build.sourceBranch)"
 
 $currentStatus = ""
 $failures = 0
