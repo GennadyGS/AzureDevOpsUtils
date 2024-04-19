@@ -1,5 +1,5 @@
 param (
-    [Parameter(Mandatory=$true)] $definition,
+    [Parameter(Mandatory=$true)] $definitionName,
     $repositoryName,
     $remoteName = "origin",
     $sourceBranch
@@ -16,13 +16,13 @@ $sourceBranch ??=
     ($repositoryName -eq (GetCurrentRepositoryName $remoteName)) ? (GetCurrentBranch) : $null
 
 $buildDefinitionsUrl = "$baseCollectionUrl/_apis/build/definitions" `
-    + "?name=$definition" + $repositoryIdParam
+    + "?name=$definitionName" + $repositoryIdParam
 
 $buildDefinitions = Invoke-RestMethod -Uri $buildDefinitionsUrl `
     -Method 'Get' -Headers @{Authorization = $authorization}
 
 if ($buildDefinitions.count -eq 0) {
-    Write-Error "Build definition $definition is not found"
+    Write-Error "Build definition $definitionName is not found"
     exit
 }
 
