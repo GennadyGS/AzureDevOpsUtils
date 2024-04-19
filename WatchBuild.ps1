@@ -1,5 +1,5 @@
 param (
-    $sourceBranchName,
+    $sourceBranchName = "master",
     $repositoryName,
     $definitionNamePattern,
     $remoteName = "origin",

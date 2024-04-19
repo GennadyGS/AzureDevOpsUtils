@@ -17,14 +17,13 @@ Function EstablishSourceBranchName {
         $remoteName
     )
 
-    if (!$sourceBranchName) {
-        if (!(IsCurrentRepository $repositoryName $remoteName)) {
-            throw "SourceBranchName must be specified in case repositoryName is not current one"
-        }
-        GetCurrentBranch
-    } else {
-        $sourceBranchName
+    if ($sourceBranchName) {
+        return $sourceBranchName
     }
+    if (!(IsCurrentRepository $repositoryName $remoteName)) {
+        throw "SourceBranchName must be specified in case repositoryName is not current one"
+    }
+    GetCurrentBranch
 }
 
 Function FindBuild {
