@@ -10,7 +10,7 @@ param (
 function GetWorkItemId
 {
     $currentBranch = GetCurrentBranch
-    [regex]::Match($currentBranch,'^(?:pbi|bug)-(?<id>\d+)').Groups["id"].Value
+    [regex]::Match($currentBranch, $branchNamePattern).Groups[1].Value
 }
 
 Function BrowseWorkItem($id) {

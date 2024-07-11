@@ -2,4 +2,4 @@ $baseInstanceUrl = ""
 $collection = ""
 $pat = ""
 $ciBuildNamePattern = "^[a-zA-Z\.]+_CI$"
-
+$branchNamePattern = "(?i)^(?:pbi|bug)-(\d+)"

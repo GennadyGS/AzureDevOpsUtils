@@ -6,3 +6,4 @@ $maxWatchFailures = 3
 $hostShell = "pwsh"
 $hostShellArgs = ""
 $ciBuildNamePattern = ""
+$branchNamePattern = "^[a-zA-Z]+-(\d+)"
