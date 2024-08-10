@@ -43,4 +43,5 @@ $build = Invoke-RestMethod `
     -body ($body | ConvertTo-Json) `
     -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 
+Start-Sleep -Seconds 5
 WatchBuildById.ps1 $build.id
