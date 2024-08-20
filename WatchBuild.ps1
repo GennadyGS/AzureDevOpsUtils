@@ -1,7 +1,7 @@
 param (
-    $sourceBranchName = "master",
-    $repositoryName,
     $definitionNamePattern,
+    $sourceBranch = "master",
+    $repositoryName,
     $remoteName = "origin",
     $top = 50
 )
@@ -12,16 +12,16 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
 $repositoryName ??= GetCurrentRepositoryName $remoteName
-$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
+$sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteName
 
 $buildId = FindBuild `
-    -sourceBranch:$sourceBranchName `
+    -sourceBranch:$sourceBranch `
     -repositoryName:$repositoryName `
     -definitionNamePattern:$definitionNamePattern `
     -top:$top
 
 if (!$buildId) {
-    Write-Warning "Build is not found for source branch $sourceBranchName and repository $repositoryName"
+    Write-Warning "Build is not found for source branch $sourceBranch and repository $repositoryName"
     return
 }
 Write-Host "Build $buildId is found"

@@ -1,8 +1,8 @@
 param (
     [Parameter(Mandatory=$true)] $definitionName,
+    $sourceBranch,
     $repositoryName,
-    $remoteName = "origin",
-    $sourceBranch
+    $remoteName = "origin"
 )
 
 . $PSScriptRoot/Utils.ps1
