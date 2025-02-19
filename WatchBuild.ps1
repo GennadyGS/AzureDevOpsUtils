@@ -1,6 +1,6 @@
 param (
     $definitionNamePattern,
-    $sourceBranch = "master",
+    $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
     $top = 50
