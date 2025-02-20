@@ -117,7 +117,7 @@ if ($pullRequest.status -eq "completed") {
     Start-Sleep -Seconds 10
     $targetBranchName = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value
     & $PSScriptRoot/WatchBuild.ps1 `
-        -sourceBranchName:$targetBranchName `
+        -sourceBranch:$targetBranchName `
         -repositoryName:$repositoryName `
         -remoteName:$remoteName `
         -definitionNamePattern:$ciBuildNamePattern
