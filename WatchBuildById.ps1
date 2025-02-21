@@ -60,6 +60,7 @@ While ($build.status -ne "completed") {
 }
 
 Write-Host "Build $(GetBuildName($build)) is finished with status $($build.result)"
+Write-Output $build.result
 If ($build.result -eq "failed") {
     $imageUri = "$PSScriptRoot/Images/StatusCriticalError_256x.png"
 } ElseIf ($build.result -eq "succeeded") {

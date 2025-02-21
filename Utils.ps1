@@ -40,9 +40,9 @@ Function FindBuild {
     . LoadSettings
     . $PSScriptRoot/GitUtils/gitUtils.ps1
 
-    $reasonArg = if ($reason) { "&reasonFilter=$reason" }
+    $reasonArg = $reason ? "&reasonFilter=$reason" : ""
     $buildsUrl = `
-        "$baseCollectionUrl/_apis/build/builds?`$top=$top$reasonArg&QueryOrder=startTimeDescending"
+        "$baseCollectionUrl/_apis/build/builds?`$top=$top&QueryOrder=startTimeDescending$reasonArg"
     $builds = Invoke-RestMethod `
         -Uri $buildsUrl `
         -Method GET `

@@ -58,7 +58,7 @@ Do {
     }
 
     $buildResult = & $PSScriptRoot/WatchBuildById.ps1 $lastBuildId
-    Write-Host "Build $lastBuildId is finished with result $buildResult. Waining for next build."
+    Write-Host "Build $lastBuildId is finished with result $buildResult. Waiting for next build."
     Start-Sleep -s $pollTimeoutSec
 }
 Until($False)

@@ -17,9 +17,7 @@ $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
 Start-Process `
     "$hostShell" `
-    "$hostShellArgs $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId `
-        -repositoryName $repositoryName `
-        -remoteName $remoteName" `
+    "$hostShellArgs $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
     -WindowStyle Minimized
 
 $browseUrl = GetPullRequestBrowseUrl $repositoryName $pullRequestId
@@ -37,12 +35,10 @@ Do {
         $pullRequestThreads = Invoke-RestMethod `
             -Uri $url/threads `
             -Method GET `
-            -Body $body `
             -Headers @{ Authorization = $authorization }
         $pullRequestReviewers = Invoke-RestMethod `
             -Uri $url/reviewers `
             -Method GET `
-            -Body $body `
             -Headers @{ Authorization = $authorization }
         $failures = 0
     }
