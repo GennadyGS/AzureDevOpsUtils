@@ -17,7 +17,9 @@ $pullRequestName = GetPullRequestName $repositoryName $pullRequestId
 
 Start-Process `
     "$hostShell" `
-    "$hostShellArgs $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId -repositoryName $repositoryName -remoteName $remoteName" `
+    "$hostShellArgs $PSScriptRoot/WatchPullRequestBuild.ps1 $pullRequestId `
+        -repositoryName $repositoryName `
+        -remoteName $remoteName" `
     -WindowStyle Minimized
 
 $browseUrl = GetPullRequestBrowseUrl $repositoryName $pullRequestId

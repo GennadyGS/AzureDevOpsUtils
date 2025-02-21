@@ -19,8 +19,8 @@ $url = $(GetPullRequestsUrl $repositoryName) `
 $pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 
 $pullRequestId = $pullRequests.value `
-    | ? { $_.sourceRefName -Match "refs/heads/$sourceBranchName" } `
-    | ? { $_.targetRefName -Match "refs/heads/$targetBranchName" } `
+    | ? { $_.sourceRefName -Match "^refs/heads/$sourceBranchName$" } `
+    | ? { $_.targetRefName -Match "^refs/heads/$targetBranchName$" } `
     | % { $_.pullRequestId} `
     | Select-Object -first 1
 
