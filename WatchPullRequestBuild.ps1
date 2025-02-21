@@ -29,7 +29,7 @@ Function WaitForBuild {
                 -repositoryName $repositoryName `
                 -reason "pullRequest" `
                 -parameter "`"system.pullRequest.pullRequestId`":`"$pullRequestId`"" `
-                -fromId $lastBuidId `
+                -fromId $lastBuildId `
                 -top $top
         } Catch {
             If (++$failures -le $maxWatchFailures) {
@@ -52,13 +52,13 @@ Function WaitForBuild {
 $repositoryName ??= GetCurrentRepositoryName $remoteName
 
 Do {
-    $lastBuidId = WaitForBuild
-    if (!$lastBuidId) {
+    $lastBuildId = WaitForBuild
+    if (!$lastBuildId) {
         Return
     }
 
-    $buildResult = & $PSScriptRoot/WatchBuildById.ps1 $lastBuidId
-    Write-Host "Build $lastBuidId is finished with result $buildResult. Waining for next build."
+    $buildResult = & $PSScriptRoot/WatchBuildById.ps1 $lastBuildId
+    Write-Host "Build $lastBuildId is finished with result $buildResult. Waining for next build."
     Start-Sleep -s $pollTimeoutSec
 }
 Until($False)
