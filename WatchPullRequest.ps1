@@ -1,6 +1,6 @@
 param (
-    $targetBranchName = "master",
-    $sourceBranchName,
+    $targetBranch = "master",
+    $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
     $status = "all"
@@ -12,20 +12,20 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot\gitUtils\gitUtils.ps1
 
 $repositoryName ??= GetCurrentRepositoryName $remoteName
-$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
+$sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteName
 
 $url = $(GetPullRequestsUrl $repositoryName) `
-    + "?targetRefName=refs/heads/$targetBranchName&status=$status"
+    + "?targetRefName=refs/heads/$targetBranch&status=$status"
 $pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 
 $pullRequestId = $pullRequests.value `
-    | ? { $_.sourceRefName -Match "^refs/heads/$sourceBranchName$" } `
-    | ? { $_.targetRefName -Match "^refs/heads/$targetBranchName$" } `
+    | ? { $_.sourceRefName -Match "^refs/heads/$sourceBranch$" } `
+    | ? { $_.targetRefName -Match "^refs/heads/$targetBranch$" } `
     | % { $_.pullRequestId} `
     | Select-Object -first 1
 
 if (!$pullRequestId) {
-    throw "Cannot find PR from branch $sourceBranchName to branch $targetBranchName"
+    throw "Cannot find PR from branch $sourceBranch to branch $targetBranch"
 }
 
 & $PSScriptRoot/WatchPullRequestById.ps1 `

@@ -1,6 +1,6 @@
 param (
-    $targetBranchName = "master",
-    $sourceBranchName,
+    $targetBranch = "master",
+    $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
     $title = "",
@@ -18,9 +18,9 @@ $ErrorActionPreference = "Stop"
 Function EstablishTitle {
     if (!$title) {
         if (IsCurrentRepository $repositoryName $remoteName) {
-            $commitMessages = GetCommitMessages $remoteName/$targetBranchName $sourceBranchName
+            $commitMessages = GetCommitMessages $remoteName/$targetBranch $sourceBranch
         }
-        @("Merge $sourceBranchName to $targetBranchName") + @($commitMessages) `
+        @("Merge $sourceBranch to $targetBranch") + @($commitMessages) `
         | Select-Object -Last 1
     } else {
         $title
@@ -29,7 +29,7 @@ Function EstablishTitle {
 
 Function EstablishWorkItems {
     if (!$workItems -and (IsCurrentRepository $repositoryName $remoteName)) {
-        GetWorkItems $remoteName/$targetBranchName $sourceBranchName
+        GetWorkItems $remoteName/$targetBranch $sourceBranch
     } else {
         $workItems
     }
@@ -42,7 +42,7 @@ Function GetWorkItemRefs {
 }
 
 $repositoryName ??= GetCurrentRepositoryName $remoteName
-$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
+$sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteName
 $title = EstablishTitle
 $workItems = EstablishWorkItems
 
@@ -52,8 +52,8 @@ if (IsCurrentRepository $repositoryName $remoteName) {
 
 $urlBase = GetPullRequestsUrl $repositoryName
 $body = @{
-    sourceRefName = "refs/heads/$sourceBranchName"
-    targetRefName = "refs/heads/$targetBranchName"
+    sourceRefName = "refs/heads/$sourceBranch"
+    targetRefName = "refs/heads/$targetBranch"
     title = $title
     description = $description
     workItemRefs = @(GetWorkItemRefs $workItems)

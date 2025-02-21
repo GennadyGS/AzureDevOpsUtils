@@ -1,5 +1,5 @@
 param (
-    $targetBranchName = "master",
+    $targetBranch = "master",
     $sourceBranchNameMask = ".*",
     $repositoryName,
     $remoteName = "origin",
@@ -14,7 +14,7 @@ $ErrorActionPreference = "Stop"
 $repositoryName ??= GetCurrentRepositoryName $remoteName
 
 $url = (GetPullRequestsUrl $repositoryName) `
-    + "?targetRefName=refs/heads/$targetBranchName&status=$status"
+    + "?targetRefName=refs/heads/$targetBranch&status=$status"
 
 $resp = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 

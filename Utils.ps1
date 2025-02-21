@@ -12,16 +12,16 @@ Function LoadSettings {
 
 Function EstablishSourceBranchName {
     param (
-        $sourceBranchName,
+        $sourceBranch,
         $repositoryName,
         $remoteName
     )
 
-    if ($sourceBranchName) {
-        return $sourceBranchName
+    if ($sourceBranch) {
+        return $sourceBranch
     }
     if (!(IsCurrentRepository $repositoryName $remoteName)) {
-        throw "SourceBranchName must be specified in case repositoryName is not current one"
+        throw "sourceBranch must be specified in case repositoryName is not current one"
     }
     GetCurrentBranch
 }
@@ -29,7 +29,7 @@ Function EstablishSourceBranchName {
 Function FindBuild {
     param (
         [Parameter(Mandatory=$true)] $repositoryName,
-        $sourceBranchName,
+        $sourceBranch,
         $reason,
         $parameter,
         $definitionNamePattern,
@@ -51,7 +51,7 @@ Function FindBuild {
     $builds.value `
         | ?  { $_.repository.name -eq $repositoryName } `
         | ?  { !($parameter) -or ($_.parameters -and $_.parameters.Contains($parameter)) } `
-        | ?  { !($sourceBranchName) -or ($_.sourceBranch -eq "refs/heads/$sourceBranchName") } `
+        | ?  { !($sourceBranch) -or ($_.sourceBranch -eq "refs/heads/$sourceBranch") } `
         | ?  { !($fromId) -or ($_.id -gt $fromId) } `
         | ?  { !($definitionNamePattern) -or ($_.definition.name -match $definitionNamePattern) } `
         | %  { $_.id } `

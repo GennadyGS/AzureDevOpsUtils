@@ -1,5 +1,5 @@
 param (
-    $sourceBranchName,
+    $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
     $reason,
@@ -15,11 +15,11 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/GitUtils/gitUtils.ps1
 
 $repositoryName ??= GetCurrentRepositoryName $remoteName
-$sourceBranchName = EstablishSourceBranchName $sourceBranchName $repositoryName $remoteName
+$sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteName
 
 FindBuild `
     -repositoryName:$repositoryName `
-    -sourceBranchName:$sourceBranchName `
+    -sourceBranch:$sourceBranch `
     -reason:$reason `
     -parameter:$parameter `
     -definitionNamePattern:$definitionNamePattern `

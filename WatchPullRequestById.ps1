@@ -117,9 +117,9 @@ New-BurntToastNotification `
 if ($pullRequest.status -eq "completed") {
     Write-Host "PR is completed; watching CI build..."
     Start-Sleep -Seconds 10
-    $targetBranchName = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value
+    $targetBranch = [regex]::match($pullRequest.targetRefName, ".*/(.*)$").Groups[1].Value
     & $PSScriptRoot/WatchBuild.ps1 `
-        -sourceBranch:$targetBranchName `
+        -sourceBranch:$targetBranch `
         -repositoryName:$repositoryName `
         -remoteName:$remoteName `
         -definitionNamePattern:$ciBuildNamePattern

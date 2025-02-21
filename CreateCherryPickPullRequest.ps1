@@ -1,7 +1,7 @@
 param (
     $toTargetBranchName,
     $fromTargetBranchName = "master",
-    $sourceBranchName,
+    $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
     $title = "",
@@ -17,11 +17,11 @@ $ErrorActionPreference = "Stop"
 & $PSScriptRoot/GitUtils/gitCreateCherryPickBranch.ps1 `
     -toTargetBranchName $toTargetBranchName `
     -fromTargetBranchName $fromTargetBranchName `
-    -sourceBranchName $sourceBranchName `
+    -sourceBranch $sourceBranch `
     -remoteName $remoteName
 
 & $PSScriptRoot/CreatePullRequest.ps1 `
-    -targetBranchName $toTargetBranchName `
+    -targetBranch $toTargetBranchName `
     -repositoryName $repositoryName `
     -remoteName $remoteName `
     -title $title `
