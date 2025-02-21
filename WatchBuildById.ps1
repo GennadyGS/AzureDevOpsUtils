@@ -20,7 +20,6 @@ $toastButton = New-BTButton -Content 'Open build' -Arguments $buildOpenUrl
 $build = Invoke-RestMethod `
     -Uri $buildUrl `
     -Method GET `
-    -Body $body `
     -Headers @{ Authorization = $authorization }
 
 Write-Host "Build id: $($build.id)"
