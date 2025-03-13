@@ -2,7 +2,8 @@ param (
     [Parameter(Mandatory=$true)] $definitionName,
     $sourceBranch,
     $repositoryName,
-    $remoteName = "origin"
+    $remoteName = "origin",
+    [hashtable] $parameters = @{}
 )
 
 . $PSScriptRoot/Utils.ps1
@@ -31,9 +32,11 @@ $definitionId = $buildDefinitions.value[0].id
 $body = @{
     definition = @{ id = $definitionId }
 }
-
 If ($sourceBranch) {
-    $body.sourceBranch = $sourceBranch
+    $body["sourceBranch"] = $sourceBranch
+}
+If ($parameters) {
+    $body["templateParameters"] = $parameters
 }
 
 $buildsUrl = "$baseCollectionUrl/_apis/build/builds?api-version=2.0"
