@@ -160,3 +160,16 @@ function WaitForKey($timeoutSeconds) {
         ? $host.ui.RawUI.ReadKey("NoEcho, IncludeKeyUp").Character
         : $null;
 }
+
+function Join-UrlQuery {
+    param(
+        [Parameter(Mandatory)] [string]$BaseUrl,
+        [hashtable]$Query
+    )
+    Add-Type -AssemblyName System.Web
+    $builder = [System.UriBuilder]$BaseUrl
+    $qs = [System.Web.HttpUtility]::ParseQueryString('')
+    foreach ($k in $Query.Keys) { $qs[$k] = $Query[$k] }
+    $builder.Query = $qs.ToString()
+    return $builder.Uri.AbsoluteUri
+}

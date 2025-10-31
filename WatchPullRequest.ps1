@@ -1,5 +1,5 @@
 param (
-    $targetBranch = "master",
+    $targetBranch,
     $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
@@ -14,14 +14,18 @@ $ErrorActionPreference = "Stop"
 $repositoryName ??= GetCurrentRepositoryName $remoteName
 $sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteName
 
-$url = $(GetPullRequestsUrl $repositoryName) `
-    + "?targetRefName=refs/heads/$targetBranch&status=$status"
+$queryParams = @{ status = "$status" }
+if ($targetBranch) {
+    $queryParams["targetRefName"] = "refs/heads/$targetBranch"
+}
+
+$url = Join-UrlQuery  $(GetPullRequestsUrl $repositoryName) $queryParams
 $pullRequests = Invoke-RestMethod -Uri $url -Headers @{ Authorization = $authorization }
 
 $pullRequestId = $pullRequests.value `
     | ? { $_.sourceRefName -Match "^refs/heads/$sourceBranch$" } `
-    | ? { $_.targetRefName -Match "^refs/heads/$targetBranch$" } `
-    | % { $_.pullRequestId} `
+    | ? { !$targetBranch -or ($_.targetRefName -Match "^refs/heads/$targetBranch$") } `
+    | % { $_.pullRequestId } `
     | Select-Object -first 1
 
 if (!$pullRequestId) {
