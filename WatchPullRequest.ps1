@@ -3,7 +3,8 @@ param (
     $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
-    $status = "all"
+    $status = "all",
+    [switch]$allCreators
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,6 +18,13 @@ $sourceBranch = EstablishSourceBranchName $sourceBranch $repositoryName $remoteN
 $queryParams = @{ status = "$status" }
 if ($targetBranch) {
     $queryParams["targetRefName"] = "refs/heads/$targetBranch"
+}
+
+if (!$allCreators) {
+    $connectionData = Invoke-RestMethod `
+        -Uri "$baseInstanceUrl/_apis/connectionData" `
+        -Headers @{ Authorization = $authorization }
+    $queryParams["creatorId"] = $connectionData.authenticatedUser.id
 }
 
 $url = Join-UrlQuery  $(GetPullRequestsUrl $repositoryName) $queryParams
