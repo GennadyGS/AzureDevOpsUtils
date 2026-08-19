@@ -7,12 +7,26 @@ Function GetBuildName($build) {
     "$($build.definition.name) $($build.buildNumber)"
 }
 
+Function GetCurrentJobOrTaskName($timeline) {
+    $inProgress = $timeline.records | Where-Object { $_.state -eq "inProgress" }
+    $task = $inProgress | Where-Object { $_.type -eq "Task" } | Select-Object -First 1
+    if ($task) {
+        return $task.name
+    }
+    $job = $inProgress | Where-Object { $_.type -eq "Job" } | Select-Object -First 1
+    if ($job) {
+        return $job.name
+    }
+    return $null
+}
+
 $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 . LoadSettings
 Import-Module $PSScriptRoot/PowershellModules/BurntToast/BurntToast/BurntToast.psm1
 
 $buildUrl = "$baseCollectionUrl/_apis/build/builds/$buildId"
+$timelineUrl = "$baseCollectionUrl/_apis/build/builds/$buildId/timeline"
 $buildOpenUrl = "$baseCollectionUrl/_build/index?buildId=$buildId"
 
 $toastButton = New-BTButton -Content 'Open build' -Arguments $buildOpenUrl
@@ -30,6 +44,7 @@ Write-Host "Requested for: $($build.requestedFor.displayName)"
 Write-Host "Branch: $($build.sourceBranch)"
 
 $currentStatus = ""
+$currentJobTask = ""
 $failures = 0
 While ($build.status -ne "completed") {
     Start-Sleep -s 5
@@ -38,6 +53,10 @@ While ($build.status -ne "completed") {
             -Uri $buildUrl `
             -Method 'Get' `
             -Body $body `
+            -Headers @{Authorization = $authorization }
+        $timeline = Invoke-RestMethod `
+            -Uri $timelineUrl `
+            -Method 'Get' `
             -Headers @{Authorization = $authorization }
         $failures = 0
     } Catch {
@@ -56,7 +75,12 @@ While ($build.status -ne "completed") {
             -AppLogo "$PSScriptRoot/Images/StatusInformation_256x.png"
         }
     }
-    Write-Host "Build $(GetBuildName($build)) status: $($build.status)"
+    $jobTask = GetCurrentJobOrTaskName $timeline
+    if ($jobTask -and $jobTask -ne $currentJobTask) {
+        $currentJobTask = $jobTask
+    }
+    $jobTaskSuffix = if ($currentJobTask) { " ($currentJobTask)" } else { "" }
+    Write-Host "Build $(GetBuildName($build)) status: $($build.status)$jobTaskSuffix"
 }
 
 Write-Host "Build $(GetBuildName($build)) is finished with status $($build.result)"
