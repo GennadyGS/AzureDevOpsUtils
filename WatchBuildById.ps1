@@ -1,6 +1,7 @@
 param (
     [Parameter(Mandatory=$true)] $buildId,
-    [switch]$enableStatusChangeNotifications
+    [switch]$enableStatusChangeNotifications,
+    [string[]]$preapprovedStages = @()
 )
 
 Function GetBuildName($build) {
@@ -20,16 +21,25 @@ Function GetCurrentJobOrTaskName($timeline) {
     return $null
 }
 
-Function GetStageName($timeline, $record) {
+Function GetStageRecord($timeline, $record) {
     $current = $record
     While ($current) {
         If ($current.type -eq "Stage") {
-            return $current.name
+            return $current
         }
         $parentId = $current.parentId
         $current = $timeline.records | Where-Object { $_.id -eq $parentId } | Select-Object -First 1
     }
-    return $record.name
+    return $record
+}
+
+Function IsPreapprovedStage($stageName) {
+    foreach ($pattern in $preapprovedStages) {
+        If ($stageName -like $pattern) {
+            return $true
+        }
+    }
+    return $false
 }
 
 Function GetPendingApprovals($timeline) {
@@ -43,18 +53,22 @@ Function GetPendingApprovals($timeline) {
         -Uri "$approvalsUrl`?approvalIds=$approvalIds&`$expand=steps&api-version=$approvalsApiVersion" `
         -Method GET `
         -Headers @{ Authorization = $authorization }
+    # Stage order from the timeline follows the pipeline definition; name keeps ties stable
     $approvals.value `
         | Where-Object { $_.status -eq "pending" } `
         | ForEach-Object {
             $approval = $_
             $approvers = @($approval.steps | ForEach-Object { $_.assignedApprover.displayName }) -join ", "
+            $stage = GetStageRecord $timeline ($records | Where-Object { $_.id -eq $approval.id })
             [pscustomobject]@{
                 Id = $approval.id
-                Stage = GetStageName $timeline ($records | Where-Object { $_.id -eq $approval.id })
+                Stage = $stage.name
+                StageOrder = [int]$stage.order
                 Approvers = $approvers
                 Instructions = $approval.instructions
             }
-        }
+        } `
+        | Sort-Object StageOrder, Stage
 }
 
 Function Limit-Text($text, $maxLength) {
@@ -107,8 +121,10 @@ Function SetApprovalStatus($approval, $status) {
             -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" } `
         | Out-Null
         Write-Host "Stage $($approval.Stage) is $status" -ForegroundColor Green
+        return $true
     } Catch {
         Write-Warning "Failed to set approval for stage $($approval.Stage) to ${status}: $_"
+        return $false
     }
 }
 
@@ -154,7 +170,7 @@ Function HandleApprovalKey($keyChar, $approvals) {
     }
     $number = ReadApprovalNumber $keyChar $approvals.Count
     If ($number) {
-        SetApprovalStatus $approvals[$number - 1] $status
+        $null = SetApprovalStatus $approvals[$number - 1] $status
         return $true
     }
     return $false
@@ -189,6 +205,7 @@ $approvalsUrl = "$projectUrl/_apis/pipelines/approvals"
 $approvalsApiVersion = "7.1"
 $pendingApprovals = @()
 $shownApprovalIds = ""
+$preapprovalAttemptedIds = @{}
 
 $currentStatus = ""
 $currentJobTask = ""
@@ -233,6 +250,14 @@ While ($build.status -ne "completed") {
         Write-Warning "Failed to get approvals: $($_.Exception.Message)"
         $pendingApprovals = @()
     }
+    $pendingApprovals = @($pendingApprovals | Where-Object {
+        If ((IsPreapprovedStage $_.Stage) -and !$preapprovalAttemptedIds.ContainsKey($_.Id)) {
+            $preapprovalAttemptedIds[$_.Id] = $true
+            Write-Host "Stage $($_.Stage) is preapproved" -ForegroundColor Green
+            return !(SetApprovalStatus $_ "approved")
+        }
+        return $true
+    })
     $approvalIds = ($pendingApprovals | ForEach-Object { $_.Id }) -join ","
     If ($approvalIds -ne $shownApprovalIds) {
         $shownApprovalIds = $approvalIds

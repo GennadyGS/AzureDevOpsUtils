@@ -3,7 +3,8 @@ param (
     $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
-    $top = 50
+    $top = 50,
+    [string[]]$preapprovedStages = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,4 +27,4 @@ if (!$buildId) {
 }
 Write-Host "Build $buildId is found"
 
-& $PSScriptRoot/WatchBuildById.ps1 $buildId
+& $PSScriptRoot/WatchBuildById.ps1 $buildId -preapprovedStages $preapprovedStages

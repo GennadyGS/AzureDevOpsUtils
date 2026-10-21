@@ -3,7 +3,8 @@ param (
     $sourceBranch,
     $repositoryName,
     $remoteName = "origin",
-    [hashtable] $parameters = @{}
+    [hashtable] $parameters = @{},
+    [string[]]$preapprovedStages = @()
 )
 
 . $PSScriptRoot/Utils.ps1
@@ -47,4 +48,4 @@ $build = Invoke-RestMethod `
     -Headers @{ Authorization = $authorization; "Content-Type" = "application/json" }
 
 Start-Sleep -Seconds 5
-WatchBuildById.ps1 $build.id
+WatchBuildById.ps1 $build.id -preapprovedStages $preapprovedStages
