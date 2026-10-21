@@ -57,17 +57,24 @@ Function GetPendingApprovals($timeline) {
         }
 }
 
+Function Limit-Text($text, $maxLength) {
+    If ($text.Length -le $maxLength) {
+        return $text
+    }
+    return $text.Substring(0, $maxLength - 3) + "..."
+}
+
 Function WriteApprovals($approvals) {
     Write-Host "Pending approvals:" -ForegroundColor Yellow
     For ($i = 0; $i -lt $approvals.Count; $i++) {
         $approval = $approvals[$i]
         $details = @()
-        If ($approval.Approvers) { $details += "approvers: $($approval.Approvers)" }
-        If ($approval.Instructions) { $details += $approval.Instructions }
+        If ($approval.Approvers) { $details += "approvers: $(Limit-Text $approval.Approvers 60)" }
+        If ($approval.Instructions) { $details += Limit-Text $approval.Instructions 60 }
         $suffix = if ($details) { " ($($details -join '; '))" } else { "" }
         Write-Host "  [$($i + 1)] Stage $($approval.Stage)$suffix" -ForegroundColor Yellow
     }
-    Write-Host "Type <number> to approve (Enter to confirm multi-digit), R then <number> to reject" -ForegroundColor Yellow
+    Write-Host "Type <number> and press Enter to approve, R then <number> and Enter to reject" -ForegroundColor Yellow
 }
 
 Function ReadKeyChar($timeoutSeconds) {
@@ -108,29 +115,36 @@ Function SetApprovalStatus($approval, $status) {
 Function ReadApprovalNumber($firstChar, $max) {
     $text = "$firstChar"
     Write-Host $firstChar -NoNewline
-    # Commit as soon as no further digit could form a valid number, on Enter, or after a short idle
-    While (("$text" -match "^\d+$") -and ([int]$text * 10 -le $max)) {
-        $char = ReadKeyChar 1.5
-        If ($null -eq $char -or $char -eq "`r" -or $char -eq "`n") { break }
-        If ($char -notmatch "^\d$") {
+    While ($true) {
+        $char = ReadKeyChar 15
+        If ($null -eq $char -or $char -eq [char]27) {
             Write-Host " (cancelled)"
             return $null
         }
-        $text += $char
-        Write-Host $char -NoNewline
+        If ($char -eq "`r" -or $char -eq "`n") { break }
+        If ($char -eq [char]8) {
+            If ($text.Length -gt 0) {
+                $text = $text.Substring(0, $text.Length - 1)
+                Write-Host "`b `b" -NoNewline
+            }
+        } ElseIf ($char -match "^\d$") {
+            $text += $char
+            Write-Host $char -NoNewline
+        }
     }
     Write-Host ""
     $number = 0
     If ([int]::TryParse($text, [ref]$number) -and $number -ge 1 -and $number -le $max) {
         return $number
     }
+    Write-Host "Invalid approval number" -ForegroundColor Yellow
     return $null
 }
 
 Function HandleApprovalKey($keyChar, $approvals) {
     $status = "approved"
     If ("$keyChar" -eq "r" -or "$keyChar" -eq "R") {
-        Write-Host "Reject: enter approval number (any other key to cancel): " -ForegroundColor Yellow -NoNewline
+        Write-Host "Reject: enter approval number and press Enter (Esc to cancel): " -ForegroundColor Yellow -NoNewline
         $keyChar = ReadKeyChar 10
         $status = "rejected"
     }
