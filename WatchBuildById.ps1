@@ -199,6 +199,7 @@ Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
 Write-Host "Branch: $($build.sourceBranch)"
 Write-Host "Repository name: $($build.repository.name)"
+Write-Host "Press B to open the build in browser" -ForegroundColor Cyan
 
 $projectUrl = $build.url -replace "/_apis/build/.*$", ""
 $approvalsUrl = "$projectUrl/_apis/pipelines/approvals"
@@ -212,7 +213,9 @@ $currentJobTask = ""
 $failures = 0
 While ($build.status -ne "completed") {
     $keyChar = ReadKeyChar 5
-    If ($keyChar -and $pendingApprovals) {
+    If ("$keyChar" -eq "b" -or "$keyChar" -eq "B") {
+        Start-Process $buildOpenUrl
+    } ElseIf ($keyChar -and $pendingApprovals) {
         If (HandleApprovalKey $keyChar $pendingApprovals) {
             $shownApprovalIds = ""
         }
