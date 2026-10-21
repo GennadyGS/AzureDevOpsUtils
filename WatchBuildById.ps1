@@ -42,6 +42,7 @@ Write-Host "Build number: $($build.buildNumber)"
 Write-Host "Start time: $($build.startTime)"
 Write-Host "Requested for: $($build.requestedFor.displayName)"
 Write-Host "Branch: $($build.sourceBranch)"
+Write-Host "Repository name: $($build.repository.name)"
 
 $currentStatus = ""
 $currentJobTask = ""
