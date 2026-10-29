@@ -4,9 +4,9 @@ Queues a build and watches it through completion.
 .PARAMETER PipelineResources
 Maps YAML pipeline resource aliases to hashtables with DefinitionName (source
 pipeline name in the current project) and BuildNumber (display build number prefix).
-Prefixes are resolved to full display build numbers and must match exactly one build.
-Missing or ambiguous matches fail before queuing the pipeline; use a more specific
-prefix if multiple builds match. Unspecified resources retain their pipeline defaults.
+Prefixes are resolved to the full display build number of the most recently queued
+matching build. Missing matches fail before queuing the pipeline. Unspecified
+resources retain their pipeline defaults.
 .EXAMPLE
 RunBuild.ps1 NGS.Dash.ClaimApi.AKS.DeployImage -PipelineResources @{ ClaimApiBuild = @{ DefinitionName = 'NGS.Dash.ClaimApi.AKS.BuildAndPublish'; BuildNumber = '2026.10.28-preview-releases.27' } }
 #>
@@ -68,7 +68,8 @@ foreach ($alias in $pipelineResources.Keys) {
     }
 
     $resourceBuildsUrl = "$baseCollectionUrl/_apis/build/builds?definitions=$($definitions[0].id)" `
-        + "&buildNumber=" + [uri]::EscapeDataString($selection.BuildNumber + '*') + "&`$top=2&api-version=6.0"
+        + "&buildNumber=" + [uri]::EscapeDataString($selection.BuildNumber + '*') `
+        + "&queryOrder=queueTimeDescending&`$top=1&api-version=6.0"
     $response = Invoke-RestMethod -Uri $resourceBuildsUrl -Method Get `
         -Headers @{ Authorization = $authorization } -ErrorAction Stop
     $builds = @($response.value | Where-Object {
@@ -76,9 +77,6 @@ foreach ($alias in $pipelineResources.Keys) {
     })
     if ($builds.Count -eq 0) {
         throw "No build starts with '$($selection.BuildNumber)' in '$($selection.DefinitionName)' for resource '$alias'."
-    }
-    if ($builds.Count -gt 1) {
-        throw "Multiple builds start with '$($selection.BuildNumber)' in '$($selection.DefinitionName)' for resource '$alias'. Specify a more specific prefix."
     }
     $resourceVersions[$alias] = @{ version = [string]$builds[0].buildNumber }
 }
