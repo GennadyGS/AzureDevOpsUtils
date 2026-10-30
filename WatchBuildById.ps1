@@ -8,15 +8,15 @@ Function GetBuildName($build) {
     "$($build.definition.name) $($build.buildNumber)"
 }
 
-Function GetCurrentJobOrTaskName($timeline) {
+Function GetCurrentJobOrTaskRecord($timeline) {
     $inProgress = $timeline.records | Where-Object { $_.state -eq "inProgress" }
     $task = $inProgress | Where-Object { $_.type -eq "Task" } | Select-Object -First 1
     if ($task) {
-        return $task.name
+        return $task
     }
     $job = $inProgress | Where-Object { $_.type -eq "Job" } | Select-Object -First 1
     if ($job) {
-        return $job.name
+        return $job
     }
     return $null
 }
@@ -31,6 +31,41 @@ Function GetStageRecord($timeline, $record) {
         $current = $timeline.records | Where-Object { $_.id -eq $parentId } | Select-Object -First 1
     }
     return $record
+}
+
+Function GetCurrentActivity($timeline, $previousActivity) {
+    $jobTask = GetCurrentJobOrTaskRecord $timeline
+    $stage = $null
+    If ($jobTask) {
+        $candidate = GetStageRecord $timeline $jobTask
+        If ($candidate.type -eq "Stage" -and $candidate.state -eq "inProgress") {
+            $stage = $candidate
+        }
+    } Else {
+        $stage = $timeline.records | Where-Object {
+            $_.type -eq "Stage" -and $_.state -eq "inProgress"
+        } | Select-Object -First 1
+    }
+
+    $jobTaskName = $null
+    If ($jobTask) {
+        $jobTaskName = $jobTask.name
+    } ElseIf ($previousActivity -and $previousActivity.StageId -eq $stage.id) {
+        $jobTaskName = $previousActivity.JobTask
+    }
+    return [pscustomobject]@{
+        StageId = $stage.id
+        Stage = $stage.name
+        JobTask = $jobTaskName
+    }
+}
+
+Function GetBuildStatusMessage($build, $activity) {
+    $details = @()
+    If ($activity.Stage) { $details += "Stage: $($activity.Stage)" }
+    If ($activity.JobTask) { $details += $activity.JobTask }
+    $suffix = if ($details) { " ($($details -join ' - '))" } else { "" }
+    return "Build $(GetBuildName($build)) status: $($build.status)$suffix"
 }
 
 Function IsPreapprovedStage($stageName) {
@@ -209,7 +244,7 @@ $shownApprovalIds = ""
 $preapprovalAttemptedIds = @{}
 
 $currentStatus = ""
-$currentJobTask = ""
+$currentActivity = $null
 $failures = 0
 While ($build.status -ne "completed") {
     $keyChar = ReadKeyChar 5
@@ -274,12 +309,8 @@ While ($build.status -ne "completed") {
             }
         }
     }
-    $jobTask = GetCurrentJobOrTaskName $timeline
-    if ($jobTask -and $jobTask -ne $currentJobTask) {
-        $currentJobTask = $jobTask
-    }
-    $jobTaskSuffix = if ($currentJobTask) { " ($currentJobTask)" } else { "" }
-    Write-Host "Build $(GetBuildName($build)) status: $($build.status)$jobTaskSuffix"
+    $currentActivity = GetCurrentActivity $timeline $currentActivity
+    Write-Host (GetBuildStatusMessage $build $currentActivity)
 }
 
 Write-Host "Build $(GetBuildName($build)) is finished with status $($build.result)"
