@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+Watches a build and notifies when its stages or the build complete.
+.DESCRIPTION
+Stage completion notifications include the result and are sent once per stage.
+Stages already completed in the first timeline snapshot do not trigger notifications.
+.PARAMETER enableStatusChangeNotifications
+Also notifies when the build status changes or an approval is pending.
+#>
 param (
     [Parameter(Mandatory=$true)] $buildId,
     [switch]$enableStatusChangeNotifications,
@@ -66,6 +75,31 @@ Function GetBuildStatusMessage($build, $activity) {
     If ($activity.JobTask) { $details += $activity.JobTask }
     $suffix = if ($details) { " ($($details -join ' - '))" } else { "" }
     return "Build $(GetBuildName($build)) status: $($build.status)$suffix"
+}
+
+Function WriteStageCompletionNotifications($timeline, $build, $seenStageIds, $initialize, $toastButton, $imageRoot) {
+    $completedStages = $timeline.records | Where-Object { $_.type -eq "Stage" -and $_.state -eq "completed" }
+    foreach ($stage in $completedStages) {
+        If (!$stage.id) {
+            throw "A completed stage has no timeline record ID: $($stage.name)"
+        }
+        If ($seenStageIds.ContainsKey($stage.id)) {
+            continue
+        }
+        If (!$initialize) {
+            $result = if ($stage.result) { $stage.result } else { "completed" }
+            $imageName = switch ($result) {
+                "succeeded" { "StatusOK_256x.png" }
+                "failed" { "StatusCriticalError_256x.png" }
+                default { "StatusWarning_256x.png" }
+            }
+            New-BurntToastNotification `
+                -Text "Build $(GetBuildName($build)): stage $($stage.name) $result" `
+                -Button $toastButton `
+                -AppLogo (Join-Path $imageRoot $imageName)
+        }
+        $seenStageIds[$stage.id] = $true
+    }
 }
 
 Function IsPreapprovedStage($stageName) {
@@ -245,9 +279,13 @@ $preapprovalAttemptedIds = @{}
 
 $currentStatus = ""
 $currentActivity = $null
+$seenCompletedStageIds = @{}
+$stageNotificationsInitialized = $false
+$firstPoll = $true
 $failures = 0
 While ($build.status -ne "completed") {
-    $keyChar = ReadKeyChar 5
+    $keyChar = if ($firstPoll) { $null } else { ReadKeyChar 5 }
+    $firstPoll = $false
     If ("$keyChar" -eq "b" -or "$keyChar" -eq "B") {
         Start-Process $buildOpenUrl
     } ElseIf ($keyChar -and $pendingApprovals) {
@@ -255,16 +293,20 @@ While ($build.status -ne "completed") {
             $shownApprovalIds = ""
         }
     }
+    $timelineUpdated = $false
     Try {
-        $build = Invoke-RestMethod `
+        $updatedBuild = Invoke-RestMethod `
             -Uri $buildUrl `
             -Method 'Get' `
             -Body $body `
             -Headers @{Authorization = $authorization }
-        $timeline = Invoke-RestMethod `
+        $updatedTimeline = Invoke-RestMethod `
             -Uri $timelineUrl `
             -Method 'Get' `
             -Headers @{Authorization = $authorization }
+        $build = $updatedBuild
+        $timeline = $updatedTimeline
+        $timelineUpdated = $true
         $failures = 0
     } Catch {
         If (++$failures -le $maxWatchFailures) {
@@ -272,6 +314,11 @@ While ($build.status -ne "completed") {
         } Else {
             Throw;
         }
+    }
+    If ($timelineUpdated) {
+        WriteStageCompletionNotifications $timeline $build $seenCompletedStageIds (!$stageNotificationsInitialized) `
+            $toastButton (Join-Path $PSScriptRoot "Images")
+        $stageNotificationsInitialized = $true
     }
     if ($build.status -ne $currentStatus) {
         $currentStatus = $build.status
